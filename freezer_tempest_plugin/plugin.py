@@ -13,13 +13,11 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-
 import os
 
-from tempest import config
 from tempest.test_discover import plugins
 
-from freezer_tempest_plugin import config as project_config
+from freezer_tempest_plugin import config as freezer_config
 
 
 class FreezerTempestPlugin(plugins.TempestPlugin):
@@ -31,7 +29,8 @@ class FreezerTempestPlugin(plugins.TempestPlugin):
         return full_test_dir, base_path
 
     def register_opts(self, conf):
-        pass
+        conf.register_opt(freezer_config.service_option,
+                          group='service_available')
 
     def get_opt_lists(self):
-        pass
+        return [('service_available', [freezer_config.service_option])]

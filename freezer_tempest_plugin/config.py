@@ -13,3 +13,9 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+from oslo_config import cfg
+
+service_option = cfg.BoolOpt('freezer',
+                             default=True,
+                             help="Whether or not freezer is expected to be "
+                                  "available")

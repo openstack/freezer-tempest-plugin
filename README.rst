@@ -11,8 +11,3 @@ More information can be found in the freezer developer documentation.
 * Documentation: http://docs.openstack.org/developer/freezer-tempest-plugin
 * Source: http://git.openstack.org/cgit/openstack/freezer-tempest-plugin
 * Bugs: http://bugs.launchpad.net/freezer
-
-Features
---------
-
-* TODO
