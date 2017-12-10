@@ -22,7 +22,7 @@ import time
 from tempest.lib.cli import base as cli_base
 from tempest.lib.cli import output_parser
 
-from freezer_tempest_plugin.tests.api import base
+from freezer_tempest_plugin.tests.freezer.api import base
 
 JOB_TABLE_RESULT_COLUMN = 3
 

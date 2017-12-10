@@ -19,7 +19,7 @@ import subprocess
 from tempest.lib import decorators
 
 from freezer_tempest_plugin import common
-from freezer_tempest_plugin.tests.api import base
+from freezer_tempest_plugin.tests.freezer.api import base
 
 
 class TestFreezerCompressGzip(base.BaseFreezerTest):

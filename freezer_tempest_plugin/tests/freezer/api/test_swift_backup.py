@@ -18,7 +18,7 @@ import shutil
 from oslo_utils import uuidutils
 from tempest.lib import decorators
 
-from freezer_tempest_plugin.tests.api import base
+from freezer_tempest_plugin.tests.freezer.api import base
 
 
 class TestFreezerSwiftBackup(base.BaseFreezerTest):

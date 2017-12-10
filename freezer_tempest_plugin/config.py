@@ -19,3 +19,32 @@ service_option = cfg.BoolOpt('freezer',
                              default=True,
                              help="Whether or not freezer is expected to be "
                                   "available")
+
+ServiceAvailableGroup = [
+    cfg.BoolOpt("freezer-api",
+                default=True,
+                help="Whether or not Freezer API is expected to be available"),
+]
+
+service_available_group = cfg.OptGroup(name="service_available",
+                                       title="Available OpenStack Services")
+
+freezer_api_group = cfg.OptGroup(name="backup",
+                                 title="Freezer API Service Options")
+
+FreezerApiGroup = [
+    cfg.StrOpt("region",
+               default="",
+               help="The freezer api region name to use. If empty, the value "
+                    "of identity.region is used instead. If no such region "
+                    "is found in the service catalog, the first found one is "
+                    "used."),
+    cfg.StrOpt("catalog_type",
+               default="backup",
+               help="Catalog type of the freezer-api service."),
+    cfg.StrOpt('endpoint_type',
+               default='publicURL',
+               choices=['public', 'admin', 'internal',
+                        'publicURL', 'adminURL', 'internalURL'],
+               help="The endpoint type to use for the freezer-api service.")
+]

@@ -12,14 +12,22 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-from tempest.lib import decorators
+from tempest import config
+from tempest import test
 
-from freezer_tempest_plugin.tests.api import base
+from freezer_tempest_plugin import clients
+
+CONF = config.CONF
 
 
-class TestFreezerTestsRunning(base.BaseFreezerTest):
+class BaseFreezerApiTest(test.BaseTestCase):
+    """Base test case class for all Freezer API tests."""
 
-    @decorators.attr(type="gate")
-    def test_tests_running(self):
-        # See if tempest plugin tests run.
-        self.assertEqual(1, 1, 'Tests are running')
+    credentials = ['primary']
+
+    client_manager = clients.Manager
+
+    @classmethod
+    def setup_clients(cls):
+        super(BaseFreezerApiTest, cls).setup_clients()
+        cls.freezer_api_client = cls.os_primary.freezer_api_client
