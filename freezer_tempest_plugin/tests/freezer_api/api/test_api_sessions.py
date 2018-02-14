@@ -111,6 +111,7 @@ class TestFreezerApiSessions(base.BaseFreezerApiTest):
             "time_ended": 1234,
             "status": "completed",
             "result": "success",
+            "project_id": self.freezer_api_client.tenant_id,
             "user_id": "user-id-1"
         }
 

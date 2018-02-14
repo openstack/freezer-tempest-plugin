@@ -14,11 +14,13 @@
 
 import urllib
 
+from oslo_log import log
 from oslo_serialization import jsonutils as json
 from tempest import config
 from tempest.lib.common import rest_client
 
 CONF = config.CONF
+LOG = log.getLogger(__name__)
 
 
 class FreezerApiClient(rest_client.RestClient):
@@ -29,6 +31,9 @@ class FreezerApiClient(rest_client.RestClient):
             CONF.backup.region or CONF.identity.region,
             endpoint_type=CONF.backup.endpoint_type
         )
+        LOG.info(self)
+        if self.tenant_id:
+            LOG.info(self.tenant_id)
 
     def get_version(self):
 
@@ -48,17 +53,17 @@ class FreezerApiClient(rest_client.RestClient):
     def get_backups(self, backup_id=None, **params):
 
         if backup_id is None:
-            uri = '/v1/backups'
+            uri = '/v2/{0}/backups'.format(self.tenant_id)
             if params:
                 uri += '?%s' % urllib.urlencode(params)
         else:
-            uri = '/v1/backups/' + backup_id
+            uri = '/v2/{0}/backups/{1}'.format(self.tenant_id, backup_id)
 
         resp, response_body = self.get(uri)
         return resp, json.loads(response_body)
 
     def post_backups(self, metadata, backup_id=None):
-        uri = '/v1/backups'
+        uri = '/v2/{0}/backups'.format(self.tenant_id)
         if backup_id is not None:
             uri += '/' + backup_id
 
@@ -69,18 +74,18 @@ class FreezerApiClient(rest_client.RestClient):
 
     def delete_backups(self, backup_id):
 
-        uri = '/v1/backups/' + backup_id
+        uri = '/v2/{0}/backups/{1}'.format(self.tenant_id, backup_id)
         resp, response_body = self.delete(uri)
         return resp, response_body
 
     def get_clients(self, client_id=None, **params):
 
         if client_id is None:
-            uri = '/v1/clients'
+            uri = '/v2/{0}/clients'.format(self.tenant_id)
             if params:
                 uri += '?%s' % urllib.urlencode(params)
         else:
-            uri = 'v1/clients/' + client_id
+            uri = 'v2/{0}/clients/{1}'.format(self.tenant_id, client_id)
 
         resp, response_body = self.get(uri)
         return resp, response_body
@@ -88,23 +93,24 @@ class FreezerApiClient(rest_client.RestClient):
     def post_clients(self, client):
 
         request_body = json.dumps(client)
-        resp, response_body = self.post('/v1/clients', request_body)
+        resp, response_body = self.post('/v2/{0}/clients'.format(
+            self.tenant_id), request_body)
         return resp, json.loads(response_body)
 
     def delete_clients(self, client_id):
 
-        uri = '/v1/clients/' + client_id
+        uri = '/v2/{0}/clients/{1}'.format(self.tenant_id, client_id)
         resp, response_body = self.delete(uri)
         return resp, response_body
 
     def get_jobs(self, job_id=None, **params):
 
         if job_id is None:
-            uri = '/v1/jobs'
+            uri = '/v2/{0}/jobs'.format(self.tenant_id)
             if params:
                 uri += '?%s' % urllib.urlencode(params)
         else:
-            uri = '/v1/jobs/' + job_id
+            uri = '/v2/{0}/jobs/{1}'.format(self.tenant_id, job_id)
 
         resp, response_body = self.get(uri)
         return resp, response_body
@@ -112,23 +118,24 @@ class FreezerApiClient(rest_client.RestClient):
     def post_jobs(self, job):
 
         request_body = json.dumps(job)
-        resp, response_body = self.post('/v1/jobs', request_body)
+        resp, response_body = self.post('/v2/{0}/jobs'.format(
+            self.tenant_id), request_body)
         return resp, json.loads(response_body)
 
     def delete_jobs(self, job_id):
 
-        uri = '/v1/jobs/' + job_id
+        uri = '/v2/{0}/jobs/{1}'.format(self.tenant_id, job_id)
         resp, response_body = self.delete(uri)
         return resp, response_body
 
     def get_actions(self, action_id=None, **params):
 
         if action_id is None:
-            uri = '/v1/actions'
+            uri = '/v2/{0}/actions'.format(self.tenant_id)
             if params:
                 uri += '?%s' % urllib.urlencode(params)
         else:
-            uri = '/v1/actions/' + action_id
+            uri = '/v2/{0}/actions/{1}'.format(self.tenant_id, action_id)
 
         resp, response_body = self.get(uri)
         return resp, response_body
@@ -138,9 +145,9 @@ class FreezerApiClient(rest_client.RestClient):
         request_body = json.dumps(action)
 
         if action_id is None:
-            uri = '/v1/actions'
+            uri = '/v2/{0}/actions'.format(self.tenant_id)
         else:
-            uri = '/v1/actions/' + action_id
+            uri = '/v2/{0}/actions/{1}'.format(self.tenant_id, action_id)
 
         resp, response_body = self.post(uri, request_body)
         return resp, json.loads(response_body)
@@ -149,24 +156,24 @@ class FreezerApiClient(rest_client.RestClient):
 
         request_body = json.dumps(action)
 
-        uri = '/v1/actions/' + action_id
+        uri = '/v2/{0}/actions/{1}'.format(self.tenant_id, action_id)
         resp, response_body = self.patch(uri, request_body)
         return resp, json.loads(response_body)
 
     def delete_actions(self, id):
 
-        uri = '/v1/actions/' + id
+        uri = '/v2/{0}/actions/{1}'.format(self.tenant_id, id)
         resp, response_body = self.delete(uri)
         return resp, response_body
 
     def get_sessions(self, session_id=None, **params):
 
         if session_id is None:
-            uri = '/v1/sessions'
+            uri = '/v2/{0}/sessions'.format(self.tenant_id)
             if params:
                 uri += '?%s' % urllib.urlencode(params)
         else:
-            uri = 'v1/sessions/' + session_id
+            uri = '/v2/{0}/sessions/'.format(self.tenant_id, session_id)
 
         resp, response_body = self.get(uri)
         return resp, response_body
@@ -174,11 +181,12 @@ class FreezerApiClient(rest_client.RestClient):
     def post_sessions(self, session):
 
         request_body = json.dumps(session)
-        resp, response_body = self.post('/v1/sessions', request_body)
+        resp, response_body = self.post('/v2/{0}/sessions'.format(
+            self.tenant_id), request_body)
         return resp, json.loads(response_body)
 
     def delete_sessions(self, session_id):
 
-        uri = '/v1/sessions/' + session_id
+        uri = '/v2/{0}/sessions/{1}'.format(self.tenant_id, session_id)
         resp, response_body = self.delete(uri)
         return resp, response_body

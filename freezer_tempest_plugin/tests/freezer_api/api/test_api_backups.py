@@ -163,7 +163,7 @@ class TestFreezerApiBackups(base.BaseFreezerApiTest):
         """
         metadata = self._build_metadata("test_freezer_backups")
 
-        uri = '/v1/backups'
+        uri = '/v2/{0}/backups'.format(self.freezer_api_client.tenant_id)
         request_body = json.dumps(metadata)
 
         # Passing in an empty dict for headers to avoid automatically
@@ -231,6 +231,7 @@ class TestFreezerApiBackups(base.BaseFreezerApiTest):
         return {
             'user_name': self.os_primary.credentials.username,
             'user_id': self.os_primary.credentials.user_id,
+            'project_id': self.freezer_api_client.tenant_id,
             'backup_metadata': metadata
         }
 
