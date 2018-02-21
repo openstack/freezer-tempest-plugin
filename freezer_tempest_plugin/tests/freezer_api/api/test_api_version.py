@@ -35,15 +35,15 @@ class TestFreezerApiVersion(base.BaseFreezerApiTest):
 
         resp_body_json = json.loads(response_body)
         self.assertIn('versions', resp_body_json)
-        current_version = resp_body_json['versions'][1]
+        current_version = resp_body_json['versions'][0]
         self.assertEqual(len(current_version), 4)
         self.assertIn('id', current_version)
-        self.assertEqual(current_version['id'], 'v1')
+        self.assertEqual(current_version['id'], 'v2')
         self.assertIn('links', current_version)
         links = current_version['links'][0]
         self.assertIn('href', links)
         href = links['href']
-        self.assertIn('/v1/', href)
+        self.assertIn('/v2/', href)
         self.assertIn('rel', links)
         rel = links['rel']
         self.assertEqual('self', rel)
@@ -51,33 +51,6 @@ class TestFreezerApiVersion(base.BaseFreezerApiTest):
         status = current_version['status']
         self.assertEqual('CURRENT', status)
         self.assertIn('updated', current_version)
-
-    @decorators.attr(type="gate")
-    def test_api_version_v1(self):
-        resp, response_body = self.freezer_api_client.get_version_v1()
-        self.assertEqual(200, resp.status)
-
-        response_body_jason = json.loads(response_body)
-        self.assertIn('resources', response_body_jason)
-        resource = response_body_jason['resources']
-        self.assertIn('rel/backups', resource)
-        rel_backups = resource['rel/backups']
-        self.assertIn('href-template', rel_backups)
-        href_template = rel_backups['href-template']
-        self.assertEqual('/v1/backups/{backup_id}', href_template)
-        self.assertIn('href-vars', rel_backups)
-        href_vars = rel_backups['href-vars']
-        self.assertIn('backup_id', href_vars)
-        backup_id = href_vars['backup_id']
-        self.assertEqual('param/backup_id', backup_id)
-        self.assertIn('hints', rel_backups)
-        hints = rel_backups['hints']
-        self.assertIn('allow', hints)
-        allow = hints['allow']
-        self.assertEqual('GET', allow[0])
-        self.assertIn('formats', hints)
-        formats = hints['formats']
-        self.assertIn('application/json', formats)
 
     @decorators.attr(type="gate")
     def test_api_version_v2(self):
