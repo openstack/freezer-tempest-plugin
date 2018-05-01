@@ -68,7 +68,7 @@ Often a devstack VM is used via SSH without graphical interface. Python has mult
 
 #. It should drop you into the debugger!
 
-.. [3] https://pypi.python.org/pypi/pudb
+.. [3] https://pypi.org/project/pudb
 
 Run tests outside a devstack VM
 -------------------------------
