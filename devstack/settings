@@ -1,0 +1,3 @@
+GITREPO["freezer-tempest-plugin"]=${FREEZER_TEMPEST_REPO:-${GIT_BASE}/openstack/freezer-tempest-plugin.git}
+GITDIR["freezer-tempest-plugin"]=$DEST/freezer-tempest-plugin
+GITBRANCH["freezer-tempest-plugin"]=master
