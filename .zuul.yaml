@@ -2,5 +2,45 @@
     templates:
       - check-requirements
       - tempest-plugin-jobs
+    check:
+      jobs:
+        - freezer-tempest-basic
+
     gate:
       queue: freezer
+      jobs:
+        - freezer-tempest-basic
+
+- job:
+    name: freezer-tempest-basic
+    parent: devstack-tempest
+    timeout: 7200
+    required-projects:
+      - openstack-infra/devstack-gate
+      - openstack/python-openstackclient
+      - openstack/python-freezerclient
+      - openstack/freezer
+      - openstack/freezer-api
+      - openstack/freezer-tempest-plugin
+      - openstack/tempest
+    vars:
+      devstack_plugins:
+        freezer-api: https://git.openstack.org/openstack/freezer-api
+        freezer: https://git.openstack.org/openstack/freezer
+      devstack_services:
+        tls-proxy: false
+        freezer-api: true
+        tempest: true
+        s-account: false
+        s-container: false
+        s-object: false
+        s-proxy: false
+      devstack_localrc:
+        TEMPEST_PLUGINS: /opt/stack/freezer-tempest-plugin
+      tempest_test_regex: freezer_tempest_plugin.tests.freezer_api
+      tox_envlist: all
+      tox_environment:
+        # Do we really need to set this? It's cargo culted
+        PYTHONUNBUFFERED: 'true'
+      zuul_copy_output:
+        /etc/hosts: logs
