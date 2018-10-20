@@ -5,11 +5,13 @@
     check:
       jobs:
         - freezer-tempest-basic
+        - freezer-tempest-client
 
     gate:
       queue: freezer
       jobs:
         - freezer-tempest-basic
+        - freezer-tempest-client
 
 - job:
     name: freezer-tempest-basic
@@ -44,3 +46,10 @@
         PYTHONUNBUFFERED: 'true'
       zuul_copy_output:
         /etc/hosts: logs
+
+- job:
+    name: freezer-tempest-client
+    parent: freezer-tempest-basic
+    voting: true
+    vars:
+      tempest_test_regex: freezer_tempest_plugin.tests.freezerclient
