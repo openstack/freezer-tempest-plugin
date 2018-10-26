@@ -12,6 +12,7 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
+import os
 from tempest.lib import decorators
 
 from freezer_tempest_plugin.tests.freezerclient import base
@@ -23,13 +24,44 @@ class TestFreezerCmdClient(base.BaseFreezerTest):
 
     def setUp(self):
         super(TestFreezerCmdClient, self).setUp()
+        test_clinet_id = '{"project_id": "tecs",\
+            "client_id": "test-tenant_5253_test-hostname_19544",\
+            "description": "some usefule text here",\
+            "config_id": "config_id_contains_uuid_of_config"\
+        }'
         self.environ = super(TestFreezerCmdClient, self).get_environ()
+        self.filename = '/tmp/test_client.json'
+        os.mknod(self.filename)
+        fp = open(self.filename, 'w')
+        fp.write(test_clinet_id)
 
     def tearDown(self):
         super(TestFreezerCmdClient, self).tearDown()
+        os.remove(self.filename)
 
     @decorators.attr(type="gate")
     def test_freezer_cmd_clientlist(self):
         args = ['freezer', 'client-list']
 
-        self.run_subprocess(args, "List of clients registered in the api")
+        self.run_subprocess(args, "List of clients registered")
+
+    @decorators.attr(type="gate")
+    def test_freezer_cmd_clientregister(self):
+        args = ['freezer', 'client-register', '--file',
+                '/tmp/test_client.json']
+
+        self.run_subprocess(args, "Register a new client")
+
+    @decorators.attr(type="gate")
+    def test_freezer_cmd_clientshow(self):
+        args = ['freezer', 'client-show',
+                'test-tenant_5253_test-hostname_19544']
+
+        self.run_subprocess(args, "Show a single client")
+
+    @decorators.attr(type="gate")
+    def test_freezer_cmd_deleteclient(self):
+        args = ['freezer', 'client-delete',
+                'test-tenant_5253_test-hostname_19544']
+
+        self.run_subprocess(args, "Delete a client")
