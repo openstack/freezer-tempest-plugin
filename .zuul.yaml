@@ -6,12 +6,14 @@
       jobs:
         - freezer-tempest-basic
         - freezer-tempest-client
+        - freezer-tempest-scheduler
 
     gate:
       queue: freezer
       jobs:
         - freezer-tempest-basic
         - freezer-tempest-client
+        - freezer-tempest-scheduler
 
 - job:
     name: freezer-tempest-basic
@@ -53,3 +55,11 @@
     voting: true
     vars:
       tempest_test_regex: freezer_tempest_plugin.tests.freezerclient
+
+- job:
+    name: freezer-tempest-scheduler
+    parent: freezer-tempest-basic
+    voting: true
+    vars:
+      tempest_test_regex: freezer_tempest_plugin.tests.scheduler
+
