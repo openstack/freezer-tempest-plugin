@@ -18,29 +18,33 @@ import shutil
 from oslo_utils import uuidutils
 from tempest.lib import decorators
 
-from freezer_tempest_plugin.tests.freezer.api import base
+from freezer_tempest_plugin.tests.freezer.agent import base
 
 
-class TestFreezerSwiftBackup(base.BaseFreezerTest):
+class TestFreezerFSBackup(base.BaseFreezerTest):
     def __init__(self, *args, **kwargs):
-        super(TestFreezerSwiftBackup, self).__init__(*args, **kwargs)
+        super(TestFreezerFSBackup, self).__init__(*args, **kwargs)
 
     def setUp(self):
-        super(TestFreezerSwiftBackup, self).setUp()
+        super(TestFreezerFSBackup, self).setUp()
 
         test_id = uuidutils.generate_uuid(dashed=False)
 
         self.backup_source_dir = (
             "/tmp/freezer-test-backup-source/" + test_id
         )
+
         self.backup_source_sub_dir = self.backup_source_dir + "/subdir"
 
         self.restore_target_dir = (
             "/tmp/freezer-test-backup-restore/" + test_id
         )
 
-        self.freezer_container_name = 'freezer-test-container-0'
-        self.freezer_backup_name = 'freezer-test-backup-swift-0'
+        self.backup_local_storage_dir = (
+            "/tmp/freezer-test-backup-local-storage/" + test_id
+        )
+
+        self.freezer_backup_name = 'freezer-test-backup-fs-0'
 
         shutil.rmtree(self.backup_source_dir, True)
         os.makedirs(self.backup_source_dir)
@@ -56,25 +60,30 @@ class TestFreezerSwiftBackup(base.BaseFreezerTest):
         shutil.rmtree(self.restore_target_dir, True)
         os.makedirs(self.restore_target_dir)
 
-        self.environ = super(TestFreezerSwiftBackup, self).get_environ()
+        shutil.rmtree(self.backup_local_storage_dir, True)
+        os.makedirs(self.backup_local_storage_dir)
+
+        self.environ = super(TestFreezerFSBackup, self).get_environ()
 
     def tearDown(self):
-        super(TestFreezerSwiftBackup, self).tearDown()
-
+        super(TestFreezerFSBackup, self).tearDown()
         shutil.rmtree(self.backup_source_dir, True)
         shutil.rmtree(self.restore_target_dir, True)
+        shutil.rmtree(self.backup_local_storage_dir)
 
     @decorators.attr(type="gate")
-    def test_freezer_swift_backup(self):
+    def test_freezer_fs_backup(self):
         backup_args = ['freezer-agent',
                        '--path-to-backup',
                        self.backup_source_dir,
                        '--container',
-                       self.freezer_container_name,
+                       self.backup_local_storage_dir,
                        '--backup-name',
-                       self.freezer_backup_name]
+                       self.freezer_backup_name,
+                       '--storage',
+                       'local']
 
-        self.run_subprocess(backup_args, "Test backup to swift.")
+        self.run_subprocess(backup_args, "Test backup to local storage.")
 
         restore_args = ['freezer-agent',
                         '--action',
@@ -82,13 +91,13 @@ class TestFreezerSwiftBackup(base.BaseFreezerTest):
                         '--restore-abs-path',
                         self.restore_target_dir,
                         '--container',
-                        self.freezer_container_name,
+                        self.backup_local_storage_dir,
                         '--backup-name',
                         self.freezer_backup_name,
                         '--storage',
-                        'swift']
+                        'local']
 
-        self.run_subprocess(restore_args, "Test restore from swift.")
+        self.run_subprocess(restore_args, "Test restore from local storage.")
 
         diff_args = ['diff',
                      '-r',
@@ -97,4 +106,5 @@ class TestFreezerSwiftBackup(base.BaseFreezerTest):
                      self.restore_target_dir]
 
         self.run_subprocess(diff_args,
-                            "Test backup to swift and restore diff.")
+                            "Test backup restore from local storage "
+                            "diff.")

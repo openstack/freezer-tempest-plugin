@@ -7,6 +7,7 @@
         - freezer-tempest-basic
         - freezer-tempest-client
         - freezer-tempest-scheduler
+        - freezer-tempest-agent
 
     gate:
       queue: freezer
@@ -14,6 +15,8 @@
         - freezer-tempest-basic
         - freezer-tempest-client
         - freezer-tempest-scheduler
+        - freezer-tempest-agent
+
 
 - job:
     name: freezer-tempest-basic
@@ -22,6 +25,7 @@
     required-projects:
       - openstack-infra/devstack-gate
       - openstack/python-openstackclient
+      - openstack/swift
       - openstack/python-freezerclient
       - openstack/freezer
       - openstack/freezer-api
@@ -35,16 +39,16 @@
         tls-proxy: false
         freezer-api: true
         tempest: true
+        swift: true
         s-account: false
         s-container: false
         s-object: false
         s-proxy: false
       devstack_localrc:
-        TEMPEST_PLUGINS: /opt/stack/freezer-tempest-plugin
-      tempest_test_regex: freezer_tempest_plugin.tests.freezer_api
-      tox_envlist: all
+        TEMPEST_PLUGINS: '/opt/stack/freezer-tempest-plugin'
+      tempest_test_regex: '^(freezer_tempest_plugin.tests.freezer_api.)'
+      tox_envlist: 'all'
       tox_environment:
-        # Do we really need to set this? It's cargo culted
         PYTHONUNBUFFERED: 'true'
       zuul_copy_output:
         /etc/hosts: logs
@@ -54,12 +58,18 @@
     parent: freezer-tempest-basic
     voting: true
     vars:
-      tempest_test_regex: freezer_tempest_plugin.tests.freezerclient
+      tempest_test_regex: '^(freezer_tempest_plugin.tests.freezerclient.)'
 
 - job:
     name: freezer-tempest-scheduler
     parent: freezer-tempest-basic
     voting: true
     vars:
-      tempest_test_regex: freezer_tempest_plugin.tests.scheduler
+      tempest_test_regex: '^(freezer_tempest_plugin.tests.scheduler.)'
 
+- job:
+    name: freezer-tempest-agent
+    parent: freezer-tempest-basic
+    voting: true
+    vars:
+      tempest_test_regex: '^(freezer_tempest_plugin.tests.freezer.agent.)'
