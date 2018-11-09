@@ -14,7 +14,7 @@
 
 from tempest.lib import decorators
 
-from freezer_tempest_plugin.tests.freezer.api import base
+from freezer_tempest_plugin.tests.freezer.agent import base
 
 
 class TestFreezerTestsRunning(base.BaseFreezerTest):
