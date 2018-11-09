@@ -19,7 +19,7 @@ Setting up a devstack VM
 
 Install devstack with swift and the freezer [1]_ as well as the freezer-api [2]_ plugins by adding the following lines to you `local.conf`:
 
-::  
+::
 
     enable_plugin freezer https://git.openstack.org/openstack/freezer master
     enable_plugin freezer-api https://git.openstack.org/openstack/freezer-api master
@@ -107,14 +107,14 @@ This section describes how to run the tests outside of a devstack VM (e.g. in Py
      mkdir tempest-working
      cd tempest-working
      tempest init .
-     
+
 #. Configure `tempest-working/etc/tempest.conf`. The easiest way to do this is to just copy the config from `/opt/stack/tempest/etc/tempest.conf` inside the devstack VM.
 
 #. Run the freezer test inside the tempest working directory:
    ::
 
      cd tempest-working
-     ostestr -r freezer
+     tempest run  -r  freezer_tempest_plug
 
 Run tests outside a devstack VM (alternative instructions using nose)
 ---------------------------------------------------------------------
@@ -255,5 +255,7 @@ Troubleshooting
 
 If tests fail these are good places to check:
 
-* freezer-api log: `/var/log/apache2/freezer-api.log`
+* freezer-api log: `$HOME/log/freezer-api.log'
+                   `/var/log/apache2/freezer-api.log`
 * freezer-agent log: `$HOME/.freezer/freezer.log`
+* freezer-scheduler log:`/var/log/freezer/scheduler.log`
