@@ -75,7 +75,7 @@ class BaseFreezerTest(test.BaseTestCase):
         self.assertEqual(0, proc.returncode,
                          fail_message + " Output: {0}. "
                                         "Error: {1}".format(out, err))
-
 #        self.assertEqual('', err,
 #                         fail_message + " Output: {0}. "
 #                                        "Error: {1}".format(out, err))
+        return out, err
