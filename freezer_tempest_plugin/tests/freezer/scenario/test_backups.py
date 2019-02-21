@@ -13,7 +13,6 @@
 # under the License.
 
 import hashlib
-import json
 import os
 import shutil
 import tempfile
@@ -21,6 +20,8 @@ import time
 
 from tempest.lib.cli import base as cli_base
 from tempest.lib.cli import output_parser
+
+from oslo_serialization import jsonutils as json
 
 from freezer_tempest_plugin.tests.freezer.agent import base
 

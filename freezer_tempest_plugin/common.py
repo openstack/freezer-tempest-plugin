@@ -16,7 +16,6 @@
 import distutils.spawn
 import hashlib
 import itertools
-import json
 import os
 import random
 import shutil
@@ -25,6 +24,8 @@ import tempfile
 import unittest
 
 import paramiko
+
+from oslo_serialization import jsonutils as json
 
 from six.moves import range
 

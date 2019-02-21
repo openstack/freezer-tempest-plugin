@@ -14,13 +14,14 @@
 
 from datetime import datetime
 from datetime import timedelta
-import json
 import os
 import subprocess
 
 from time import mktime
 
 from tempest import test
+
+from oslo_serialization import jsonutils as json
 
 from freezer_tempest_plugin.common import Temp_Tree
 

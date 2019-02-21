@@ -12,11 +12,12 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-import json
 import os
 import subprocess
 
 from tempest.lib import decorators
+
+from oslo_serialization import jsonutils as json
 
 from freezer_tempest_plugin import common
 from freezer_tempest_plugin.tests.freezer.agent import base
