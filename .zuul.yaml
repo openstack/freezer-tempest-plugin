@@ -21,7 +21,6 @@
 - job:
     name: freezer-tempest-basic
     parent: devstack-tempest
-    nodeset: openstack-single-node-xenial
     timeout: 7200
     required-projects:
       - openstack-infra/devstack-gate
