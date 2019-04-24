@@ -21,8 +21,8 @@ Install devstack with swift and the freezer [1]_ as well as the freezer-api [2]_
 
 ::
 
-    enable_plugin freezer https://git.openstack.org/openstack/freezer master
-    enable_plugin freezer-api https://git.openstack.org/openstack/freezer-api master
+    enable_plugin freezer https://opendev.org/openstack/freezer master
+    enable_plugin freezer-api https://opendev.org/openstack/freezer-api master
     enable_service s-proxy s-object s-container s-account
 
 .. [1] https://github.com/openstack/freezer/blob/master/devstack/README.rst

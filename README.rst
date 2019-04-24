@@ -9,5 +9,5 @@ More information can be found in the freezer developer documentation.
 
 * Free software: Apache license
 * Documentation: https://docs.openstack.org/tempest/latest/plugin-registry.html
-* Source: https://git.openstack.org/cgit/openstack/freezer-tempest-plugin
+* Source: https://opendev.org/openstack/freezer-tempest-plugin
 * Bugs: https://storyboard.openstack.org/#!/project/openstack/freezer-tempest-plugin
