@@ -4,19 +4,26 @@
       - tempest-plugin-jobs
     check:
       jobs:
-        - freezer-tempest-basic
-        - freezer-tempest-client
+        - freezer-tempest-basic:
+            voting: false 
+        - freezer-tempest-client:
+            voting: false 
         - freezer-tempest-scheduler
         - freezer-tempest-agent
-        - freezer-tempest-basic-sql
+        - freezer-tempest-basic-sql:
+            voting: false 
+
     gate:
       queue: freezer
       jobs:
-        - freezer-tempest-basic
-        - freezer-tempest-client
+        - freezer-tempest-basic:
+            voting: false 
+        - freezer-tempest-client:
+            voting: false 
         - freezer-tempest-scheduler
         - freezer-tempest-agent
-        - freezer-tempest-basic-sql
+        - freezer-tempest-basic-sql:
+            voting: false 
 
 - job:
     name: freezer-tempest-basic
