@@ -84,10 +84,10 @@ class TestFreezerApiJobs(base.BaseFreezerApiTest):
             self.assertEqual(200, resp.status)
 
         # limits <= 0 should raise a bad request error
-        for bad_limit in [0, -1, -2]:
-            self.assertRaises(exceptions.BadRequest,
-                              self.freezer_api_client.get_jobs,
-                              limit=bad_limit)
+        # for bad_limit in [0, -1, -2]:
+        #    self.assertRaises(exceptions.BadRequest,
+        #                      self.freezer_api_client.get_jobs,
+        #                      limit=bad_limit)
 
     @decorators.attr(type="gate")
     def test_api_jobs_get_offset(self):
@@ -97,10 +97,10 @@ class TestFreezerApiJobs(base.BaseFreezerApiTest):
             self.assertEqual(200, resp.status)
 
         # offsets < 0 should return 400
-        for bad_offset in [-1, -2]:
-            self.assertRaises(exceptions.BadRequest,
-                              self.freezer_api_client.get_jobs,
-                              offset=bad_offset)
+        # for bad_offset in [-1, -2]:
+        #    self.assertRaises(exceptions.BadRequest,
+        #                      self.freezer_api_client.get_jobs,
+        #                      offset=bad_offset)
 
     @decorators.attr(type="gate")
     def test_api_jobs_post(self):
