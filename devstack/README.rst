@@ -8,14 +8,14 @@ repository.
 
 1. Download DevStack::
 
-    git clone https://git.openstack.org/openstack-dev/devstack.git
+    git clone https://opendev.org/openstack/devstack.git
     cd devstack
 
 2. Add this repo as an external repository::
 
      > cat local.conf
      [[local|localrc]]
-     enable_plugin freezer-tempest-plugin https://git.openstack.org/openstack/freezer-tempest-plugin
+     enable_plugin freezer-tempest-plugin https://opendev.org/openstack/freezer-tempest-plugin
 
 3. run ``stack.sh``
 
