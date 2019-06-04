@@ -8,16 +8,37 @@ repository.
 
 1. Download DevStack::
 
-    git clone https://opendev.org/openstack/devstack.git
+    git clone https://git.openstack.org/openstack-dev/devstack.git
     cd devstack
 
-2. Add this repo as an external repository::
+2. Add stack user and change devstack directory user group::
+    cd devstack/tools
+    ./create_stack_user
+    
+    cd devstack
+    chown -R stack ./devstack/
+
+
+3. Add this repo as an external repository::
 
      > cat local.conf
-     [[local|localrc]]
-     enable_plugin freezer-tempest-plugin https://opendev.org/openstack/freezer-tempest-plugin
+     MYSQL_PASSWORD=stack
+     RABBIT_PASSWORD=stack
+     SERVICE_TOKEN=stack
+     ADMIN_PASSWORD=stack
+     SERVICE_PASSWORD=stack
 
-3. run ``stack.sh``
+     [[local|localrc]]
+     enable_plugin freezer-tempest-plugin https://git.openstack.org/openstack/freezer-tempest-plugin
+     enable_plugin freezer https://git.openstack.org/openstack/freezer
+     enable_plugin freezer-api https://git.openstack.org/openstack/freezer-api.git
+
+     #export FREEZER_BACKEND='sqlalchemy'
+
+4. Use stack user to run ``stack.sh``
+    su stack
+    ./stack.sh
+    
 
 Running Freezer tempest tests
 =============================
