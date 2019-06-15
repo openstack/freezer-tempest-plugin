@@ -304,3 +304,54 @@ class TestFreezerScenario(BaseFreezerCliTest):
                                   'success')
 
         self.assertTrue(self.source_tree.is_equal(self.dest_tree))
+
+    def test_glance_backup(self):
+        backup_job = {
+            "client_id": "test_node",
+            "job_actions": [
+                {
+                    "freezer_action": {
+                        "action": "backup",
+                        "mode": "glance",
+                        "storage": "local",
+                        "backup_name": "backup1",
+                        "path_to_backup": self.source_tree.path,
+                        "container": "/tmp/freezer_test/",
+                    },
+                    "max_retries": 3,
+                    "max_retries_interval": 60
+                }
+            ],
+            "description": "a test glance backup"
+        }
+        restore_job = {
+            "client_id": "test_node",
+            "job_actions": [
+                {
+                    "freezer_action": {
+                        "action": "restore",
+                        "mode": "glance",
+                        "storage": "local",
+                        "restore_abs_path": self.dest_tree.path,
+                        "backup_name": "backup1",
+                        "container": "/tmp/freezer_test/",
+                    },
+                    "max_retries": 3,
+                    "max_retries_interval": 60
+                }
+            ],
+            "description": "a test glance restore"
+        }
+
+        backup_job_id = self.create_job(backup_job)
+        self.cli.freezer_client(action='job-start', params=backup_job_id)
+        self.wait_for_job_status(backup_job_id)
+        self.assertJobColumnEqual(backup_job_id, JOB_TABLE_RESULT_COLUMN,
+                                  'success')
+
+        restore_job_id = self.create_job(restore_job)
+        self.wait_for_job_status(restore_job_id)
+        self.assertJobColumnEqual(restore_job_id, JOB_TABLE_RESULT_COLUMN,
+                                  'success')
+
+        self.assertTrue(self.source_tree.is_equal(self.dest_tree))
