@@ -6,6 +6,7 @@
     check:
       jobs:
         - freezer-tempest-basic
+        - freezer-tempest-ipv6-only
         - freezer-tempest-client
         - freezer-tempest-scheduler
         - freezer-tempest-agent
@@ -13,6 +14,7 @@
     gate:
       jobs:
         - freezer-tempest-basic
+        - freezer-tempest-ipv6-only
         - freezer-tempest-client
         - freezer-tempest-scheduler
         - freezer-tempest-agent
@@ -27,7 +29,7 @@
     # Victoria gate onwards.
     # nodeset: openstack-single-node-bionic
     timeout: 7200
-    required-projects:
+    required-projects: &base_required_projects
       - openstack/python-openstackclient
       - openstack/swift
       - openstack/python-freezerclient
@@ -35,7 +37,7 @@
       - openstack/freezer-api
       - openstack/freezer-tempest-plugin
       - openstack/tempest
-    vars:
+    vars: &base_vars
       devstack_localrc:
         FREEZER_BACKEND: 'sqlalchemy'
       devstack_plugins:
@@ -55,6 +57,15 @@
       tox_envlist: 'all'
       zuul_copy_output:
         /etc/hosts: logs
+
+- job:
+    name: freezer-tempest-ipv6-only
+    parent: devstack-tempest-ipv6
+    description: |
+      Freezer devstack tempest tests job for IPv6-only deployment
+    timeout: 7200
+    required-projects: *base_required_projects
+    vars: *base_vars
 
 - job:
     name: freezer-tempest-client
