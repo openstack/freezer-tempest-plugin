@@ -33,7 +33,7 @@ repository.
      enable_plugin freezer https://git.openstack.org/openstack/freezer
      enable_plugin freezer-api https://git.openstack.org/openstack/freezer-api.git
 
-     #export FREEZER_BACKEND='sqlalchemy'
+     export FREEZER_BACKEND='sqlalchemy'
 
 4. Use stack user to run ``stack.sh``
     su stack
@@ -47,7 +47,33 @@ Running Freezer tempest tests
 
     tempest list-plugins
 
-2. Running freezer tempest tests::
+2. Config the "tempest.conf" file::
 
     cd /opt/stack/tempest
-    tempest run -r freezer_tempest_test
+    tox -e genconfig
+    cd /opt/stack/tempest/etc
+    cp tempest.conf.sample tempest.conf
+
+3. This is a sample "tempest.conf" file::
+
+    [auth]
+    admin_username = admin
+    admin_project_name = admin
+    admin_password = stack
+    admin_domain_name = Default
+    [identity]
+    uri_v3 = http://172.16.1.108/identity/v3
+
+
+3. Running freezer tempest tests::
+
+    cd /opt/stack/tempest
+    tempest run -r freezer_tempest_plugin
+
+4. Running  one tempest test case::
+
+    cd /opt/stack/tempest
+    tempest run  -r  freezer_tempest_plugin.tests.freezer_api.api.test_api_jobs.TestFreezerApiJobs.test_api_jobs_post
+   
+ For more informatin, see:
+    https://docs.openstack.org/tempest/latest/
