@@ -65,7 +65,7 @@ class TestFreezerCmdAction(base.BaseFreezerTest):
         args = ['freezer', 'action-create', '--file',
                 self.filename]
         out, err = self.run_subprocess(args, "Create a new action")
-        action_id = err.split(' ')[1]
+        action_id = err.decode().split(' ')[1]
 
         args = ['freezer', 'action-show', action_id]
 
@@ -76,7 +76,7 @@ class TestFreezerCmdAction(base.BaseFreezerTest):
         args = ['freezer', 'action-create', '--file',
                 self.filename]
         out, err = self.run_subprocess(args, "Create a new action")
-        action_id = err.split(' ')[1]
+        action_id = err.decode().split(' ')[1]
 
         args = ['freezer', 'action-delete', action_id]
 

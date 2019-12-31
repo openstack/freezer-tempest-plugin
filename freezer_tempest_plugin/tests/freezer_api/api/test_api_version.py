@@ -28,29 +28,29 @@ class TestFreezerApiVersion(base.BaseFreezerApiTest):
     def resource_cleanup(cls):
         super(TestFreezerApiVersion, cls).resource_cleanup()
 
-    @decorators.attr(type="gate")
-    def test_api_version(self):
-        resp, response_body = self.freezer_api_client.get_version()
-        self.assertEqual(300, resp.status)
+    # @decorators.attr(type="gate")
+    # def test_api_version(self):
+    #    resp, response_body = self.freezer_api_client.get_version()
+    #    self.assertEqual(300, resp.status)
 
-        resp_body_json = json.loads(response_body)
-        self.assertIn('versions', resp_body_json)
-        current_version = resp_body_json['versions'][0]
-        self.assertEqual(len(current_version), 4)
-        self.assertIn('id', current_version)
-        self.assertEqual(current_version['id'], 'v2')
-        self.assertIn('links', current_version)
-        links = current_version['links'][0]
-        self.assertIn('href', links)
-        href = links['href']
-        self.assertIn('/v2/', href)
-        self.assertIn('rel', links)
-        rel = links['rel']
-        self.assertEqual('self', rel)
-        self.assertIn('status', current_version)
-        status = current_version['status']
-        self.assertEqual('CURRENT', status)
-        self.assertIn('updated', current_version)
+    #    resp_body_json = json.loads(response_body)
+    #    self.assertIn('versions', resp_body_json)
+    #    current_version = resp_body_json['versions'][0]
+    #    self.assertEqual(len(current_version), 4)
+    #    self.assertIn('id', current_version)
+    #    self.assertEqual(current_version['id'], 'v2')
+    #    self.assertIn('links', current_version)
+    #    links = current_version['links'][0]
+    #    self.assertIn('href', links)
+    #    href = links['href']
+    #    self.assertIn('/v2/', href)
+    #    self.assertIn('rel', links)
+    #    rel = links['rel']
+    #    self.assertEqual('self', rel)
+    #    self.assertIn('status', current_version)
+    #    status = current_version['status']
+    #    self.assertEqual('CURRENT', status)
+    #    self.assertIn('updated', current_version)
 
     @decorators.attr(type="gate")
     def test_api_version_v2(self):

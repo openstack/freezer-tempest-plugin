@@ -12,10 +12,11 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-import urllib
+# import urllib
 
 from oslo_log import log
 from oslo_serialization import jsonutils as json
+from six.moves.urllib import parse as urllib
 from tempest import config
 from tempest.lib.common import rest_client
 
@@ -36,17 +37,14 @@ class FreezerApiClient(rest_client.RestClient):
             LOG.info(self.tenant_id)
 
     def get_version(self):
-
         resp, response_body = self.get('/')
         return resp, response_body
 
     def get_version_v1(self):
-
         resp, response_body = self.get('/v1')
         return resp, response_body
 
     def get_version_v2(self):
-
         resp, response_body = self.get('/v2')
         return resp, response_body
 

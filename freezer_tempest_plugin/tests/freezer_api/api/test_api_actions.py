@@ -149,13 +149,13 @@ class TestFreezerApiActions(base.BaseFreezerApiTest):
         max_cpu_priority = freezer_action_json['max_cpu_priority']
         self.assertEqual(False, max_cpu_priority)
 
-        self.assertIn('user_id', response_body)
+        # self.assertIn('user_id', response_body)
 
         self.assertIn('log_file', freezer_action_json)
         log_file = freezer_action_json['log_file']
         self.assertEqual('/dev/null', log_file)
 
-        self.assertIn('action_id', response_body)
+        # self.assertIn('action_id', response_body)
         action_id_in_resp_body = resp_body_json['action_id']
         self.assertEqual(action_id, action_id_in_resp_body)
 
