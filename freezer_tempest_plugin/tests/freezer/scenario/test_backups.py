@@ -52,7 +52,7 @@ class BaseFreezerCliTest(base.BaseFreezerTest):
 
     def create_job(self, job_json):
 
-        with tempfile.NamedTemporaryFile(delete=False) as job_file:
+        with tempfile.NamedTemporaryFile(mode='w', delete=False) as job_file:
             job_file.write(json.dumps(job_json))
             job_file.flush()
 
