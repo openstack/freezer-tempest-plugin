@@ -82,7 +82,8 @@ class TestFreezerMetadataChecksum(base.BaseFreezerTest):
         process = subprocess.Popen(restore_args,
                                    stdout=subprocess.PIPE,
                                    stderr=subprocess.PIPE,
-                                   env=self.environ, shell=False)
+                                   env=self.environ, shell=False,
+                                   universal_newlines=True)
         out, err = process.communicate()
 
         # make sure the subprocess exist with an error due to checksum mismatch

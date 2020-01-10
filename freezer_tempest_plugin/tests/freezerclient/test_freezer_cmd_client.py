@@ -26,6 +26,7 @@ class TestFreezerCmdClient(base.BaseFreezerTest):
         super(TestFreezerCmdClient, self).setUp()
         test_clinet_id = '{"project_id": "tecs",\
             "client_id": "test-tenant_5253_test-hostname_19544",\
+            "hostname": "test-hostname_19544",\
             "description": "some usefule text here",\
             "config_id": "config_id_contains_uuid_of_config"\
         }'

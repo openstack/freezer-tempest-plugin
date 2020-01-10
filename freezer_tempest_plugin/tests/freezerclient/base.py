@@ -68,7 +68,8 @@ class BaseFreezerTest(test.BaseTestCase):
         proc = subprocess.Popen(sub_process_args,
                                 stdout=subprocess.PIPE,
                                 stderr=subprocess.PIPE,
-                                env=self.environ, shell=False)
+                                env=self.environ, shell=False,
+                                universal_newlines=True)
 
         out, err = proc.communicate()
 

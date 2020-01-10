@@ -85,7 +85,7 @@ class TestFreezerCompressGzip(base.BaseFreezerTest):
 
     def _metadata(self):
         path = os.path.join(self.storage_tree.path, 'metadata.json')
-        with open(path, 'r') as f:
+        with open(path, 'rb') as f:
             return json.load(f)
 
     def _file_get_mimetype(self, metadata):
@@ -118,7 +118,8 @@ class TestFreezerCompressGzip(base.BaseFreezerTest):
 
         # run 'file' in brief mode to only output the values we want
         proc = subprocess.Popen(['file', '-b', '--mime-type', data_file_path],
-                                stdout=subprocess.PIPE)
+                                stdout=subprocess.PIPE,
+                                universal_newlines=True)
         out, err = proc.communicate()
         self.assertEqual(0, proc.returncode)
 
