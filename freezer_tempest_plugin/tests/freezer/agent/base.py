@@ -95,7 +95,7 @@ def load_metadata(path):
     :param path: the path to load
     :return: a metadata dict
     """
-    with open(path, 'r') as f:
+    with open(path, 'rb') as f:
         return json.load(f)
 
 
