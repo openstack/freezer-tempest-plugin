@@ -91,4 +91,4 @@ class TestFreezerMetadataChecksum(base.BaseFreezerTest):
             out, err)
         self.assertEqual(1, process.returncode, message)
         self.assertEqual('', out, message)
-        self.assertNotEqual('', err, message)
+        self.assertNotEqual(b'', err, message)
