@@ -138,7 +138,8 @@ class TestFreezerCompressGzip(base.BaseFreezerTest):
         self.assertEqual('gzip', metadata['compression'])
 
         # file utility should detect the correct mimetype
-        gizp_mimetypes = [b'application/gzip', b'application/x-gzip']
+        gizp_mimetypes = [b'application/gzip', b'application/x-gzip',
+                          'application/gzip', 'application/x-gzip']
         mimetype = self._file_get_mimetype(metadata)
         self.assertIn(mimetype, gizp_mimetypes)
 
@@ -161,7 +162,9 @@ class TestFreezerCompressGzip(base.BaseFreezerTest):
         self.assertEqual('bzip2', metadata['compression'])
 
         mimetype = self._file_get_mimetype(metadata)
-        self.assertEqual(b'application/x-bzip2', mimetype)
+        # self.assertEqual(b'application/x-bzip2', mimetype)
+        self.assertIn(mimetype,
+                      [b'application/x-bzip2', 'application/x-bzip2'])
 
         diff_args = ['diff', '-r', '-q',
                      self.source_tree.path,
@@ -181,7 +184,8 @@ class TestFreezerCompressGzip(base.BaseFreezerTest):
         self.assertEqual('xz', metadata['compression'])
 
         mimetype = self._file_get_mimetype(metadata)
-        self.assertEqual(b'application/x-xz', mimetype)
+        # self.assertEqual(b'application/x-xz', mimetype)
+        self.assertIn(mimetype, [b'application/x-xz', 'application/x-xz'])
 
         diff_args = ['diff', '-r', '-q',
                      self.source_tree.path,
