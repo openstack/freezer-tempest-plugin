@@ -7,8 +7,7 @@
         - freezer-tempest-basic
         - freezer-tempest-client
         - freezer-tempest-scheduler
-        - freezer-tempest-agent:
-            voting: false
+        - freezer-tempest-agent
         - freezer-tempest-basic-sql
 
     gate:
@@ -17,8 +16,7 @@
         - freezer-tempest-basic
         - freezer-tempest-client
         - freezer-tempest-scheduler
-        - freezer-tempest-agent:
-            voting: false
+        - freezer-tempest-agent
         - freezer-tempest-basic-sql
 
 - job:
