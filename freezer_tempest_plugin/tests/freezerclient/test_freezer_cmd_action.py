@@ -28,7 +28,7 @@ class TestFreezerCmdAction(base.BaseFreezerTest):
              {\
                "action": "backup",\
                "mode": "fs",\
-               "src_file": "/tmp/source",\
+               "path_to_backup": "/tmp/source",\
                "backup_name": "my-first-backup",\
                "container": "/tmp/backup/",\
                "storage": "local"\

@@ -74,7 +74,7 @@ class TestFreezerApiActions(base.BaseFreezerApiTest):
                 {
                     'action': 'backup',
                     'mode': 'fs',
-                    'src_file': '/dev/null',
+                    'path_to_backup': '/dev/null',
                     'backup_name': 'test freezer api actions',
                     'container': 'test_freezer_api_actions_container',
                     'max_backup_level': 1,
@@ -129,9 +129,9 @@ class TestFreezerApiActions(base.BaseFreezerApiTest):
         action = freezer_action_json['action']
         self.assertEqual('backup', action)
 
-        self.assertIn('src_file', freezer_action_json)
-        src_file = freezer_action_json['src_file']
-        self.assertEqual('/dev/null', src_file)
+        self.assertIn('path_to_backup', freezer_action_json)
+        path_to_backup = freezer_action_json['path_to_backup']
+        self.assertEqual('/dev/null', path_to_backup)
 
         self.assertIn('always_backup_level', freezer_action_json)
         always_backup_level = freezer_action_json['always_backup_level']
