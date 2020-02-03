@@ -12,11 +12,11 @@ repository.
     cd devstack
 
 2. Add stack user and change devstack directory user group::
-    cd devstack/tools
-    ./create_stack_user
+   
+    ./create_stack_user.sh
     
-    cd devstack
     chown -R stack ./devstack/
+    chown -R stack.stack ./devstack/
 
 
 3. Add this repo as an external repository::
