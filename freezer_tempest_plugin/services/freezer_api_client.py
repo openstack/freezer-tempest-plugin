@@ -14,9 +14,10 @@
 
 # import urllib
 
+import urllib.parse
+
 from oslo_log import log
 from oslo_serialization import jsonutils as json
-from six.moves.urllib import parse as urllib
 from tempest import config
 from tempest.lib.common import rest_client
 
@@ -53,7 +54,7 @@ class FreezerApiClient(rest_client.RestClient):
         if backup_id is None:
             uri = '/v2/{0}/backups'.format(self.tenant_id)
             if params:
-                uri += '?%s' % urllib.urlencode(params)
+                uri += '?%s' % urllib.parse.urlencode(params)
         else:
             uri = '/v2/{0}/backups/{1}'.format(self.tenant_id, backup_id)
 
@@ -81,7 +82,8 @@ class FreezerApiClient(rest_client.RestClient):
         if client_id is None:
             uri = '/v2/{0}/clients'.format(self.tenant_id)
             if params:
-                uri += '?%s' % urllib.urlencode(params)
+                uri += '?%s' % urllib.parse.urlencode(params)
+
         else:
             uri = 'v2/{0}/clients/{1}'.format(self.tenant_id, client_id)
 
@@ -106,7 +108,7 @@ class FreezerApiClient(rest_client.RestClient):
         if job_id is None:
             uri = '/v2/{0}/jobs'.format(self.tenant_id)
             if params:
-                uri += '?%s' % urllib.urlencode(params)
+                uri += '?%s' % urllib.parse.urlencode(params)
         else:
             uri = '/v2/{0}/jobs/{1}'.format(self.tenant_id, job_id)
 
@@ -131,7 +133,7 @@ class FreezerApiClient(rest_client.RestClient):
         if action_id is None:
             uri = '/v2/{0}/actions'.format(self.tenant_id)
             if params:
-                uri += '?%s' % urllib.urlencode(params)
+                uri += '?%s' % urllib.parse.urlencode(params)
         else:
             uri = '/v2/{0}/actions/{1}'.format(self.tenant_id, action_id)
 
@@ -169,7 +171,7 @@ class FreezerApiClient(rest_client.RestClient):
         if session_id is None:
             uri = '/v2/{0}/sessions'.format(self.tenant_id)
             if params:
-                uri += '?%s' % urllib.urlencode(params)
+                uri += '?%s' % urllib.parse.urlencode(params)
         else:
             uri = '/v2/{0}/sessions/'.format(self.tenant_id, session_id)
 
