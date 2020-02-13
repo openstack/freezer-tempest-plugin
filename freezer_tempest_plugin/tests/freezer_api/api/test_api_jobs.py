@@ -27,7 +27,7 @@ fake_job = {
                     {
                         "action": "backup",
                         "mode": "fs",
-                        "src_file": "/home/tylerdurden/project_mayhem",
+                        "path_to_backup": "/home/tylerdurden/project_mayhem",
                         "backup_name": "project_mayhem_backup",
                         "container": "my_backup_container",
                     },
