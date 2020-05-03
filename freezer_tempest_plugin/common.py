@@ -48,8 +48,8 @@ class CommandFailed(Exception):
 
 
 def dict_to_args(d):
-    l = [['--' + k.replace('_', '-'), v] for k, v in d.items()]
-    return list(itertools.chain.from_iterable(l))
+    li = [['--' + k.replace('_', '-'), v] for k, v in d.items()]
+    return list(itertools.chain.from_iterable(li))
 
 
 def execute_freezerc(dict, must_fail=False, merge_stderr=False):
@@ -250,8 +250,8 @@ class TestFS(unittest.TestCase):
     os_region = os.environ.get('FREEZER_TEST_OS_REGION_NAME')
     os_password = os.environ.get('FREEZER_TEST_OS_PASSWORD')
     os_auth_url = os.environ.get('FREEZER_TEST_OS_AUTH_URL')
-    use_os = (os_tenant_name and os_user_name and os_region and
-              os_password and os_auth_url)
+    use_os = (os_tenant_name and os_user_name and os_region
+              and os_password and os_auth_url)
     if use_os:
         os.environ['OS_USERNAME'] = os_user_name
         os.environ['OS_TENANT_NAME'] = os_tenant_name
