@@ -59,9 +59,10 @@ project = u'freezer Release Notes'
 copyright = u'2016, OpenStack Foundation'
 
 # openstackdocstheme options
-repository_name = 'openstack/freezer-tempest-plugin'
-bug_project = 'freezer'
-bug_tag = ''
+openstackdocs_repo_name = 'openstack/freezer-tempest-plugin'
+openstackdocs_auto_name = False
+openstackdocs_bug_project = 'freezer'
+openstackdocs_bug_tag = ''
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
@@ -103,7 +104,7 @@ exclude_patterns = []
 # show_authors = False
 
 # The name of the Pygments (syntax highlighting) style to use.
-pygments_style = 'sphinx'
+pygments_style = 'native'
 
 # A list of ignored prefixes for module index sorting.
 # modindex_common_prefix = []
