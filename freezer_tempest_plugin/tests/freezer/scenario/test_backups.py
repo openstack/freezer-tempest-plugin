@@ -41,7 +41,7 @@ class BaseFreezerCliTest(base.BaseFreezerTest):
             username=cls.os_primary.credentials.username,
             # fails if the password contains an unescaped $ sign
             password=cls.os_primary.credentials.password.replace('$', '$$'),
-            tenant_name=cls.os_primary.credentials.tenant_name,
+            project_name=cls.os_primary.credentials.project_name,
             uri=cls.get_auth_url(),
             cli_dir='/usr/local/bin'  # devstack default
         )

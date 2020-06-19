@@ -150,8 +150,7 @@ class BaseFreezerTest(test.BaseTestCase):
     def get_environ(cls):
         os.environ['OS_PASSWORD'] = cls.os_primary.credentials.password
         os.environ['OS_USERNAME'] = cls.os_primary.credentials.username
-        os.environ['OS_PROJECT_NAME'] = cls.os_primary.credentials.tenant_name
-        os.environ['OS_TENANT_NAME'] = cls.os_primary.credentials.tenant_name
+        os.environ['OS_PROJECT_NAME'] = cls.os_primary.credentials.project_name
         os.environ['OS_PROJECT_DOMAIN_NAME'] = \
             cls.os_primary.credentials.project_domain_name
         os.environ['OS_USER_DOMAIN_NAME'] = \

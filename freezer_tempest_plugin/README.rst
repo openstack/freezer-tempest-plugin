@@ -169,15 +169,15 @@ Run tests outside a devstack VM (alternative instructions using nose)
 
     username = freezer
     password = secretservice
-    tenant_name = service
+    project_name = service
     domain_name = default
     admin_username = admin
     admin_password = secretadmin
     admin_domain_name = default
-    admin_tenant_name = admin
+    admin_project_name = admin
     alt_username = admin
     alt_password = secretadmin
-    alt_tenant_name = admin
+    alt_project_name = admin
     use_ssl = False
     auth_version = v3
     uri = http://10.10.10.6:5000/v2.0/
@@ -185,7 +185,7 @@ Run tests outside a devstack VM (alternative instructions using nose)
 
     [auth]
 
-    allow_tenant_isolation = true
+    allow_project_isolation = true
     tempest_roles = admin
 
 
