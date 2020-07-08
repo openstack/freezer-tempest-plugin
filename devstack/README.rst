@@ -35,10 +35,14 @@ repository.
 
      export FREEZER_BACKEND='sqlalchemy'
 
-4. Use stack user to run ``stack.sh``
+4. Use stack user to run ``stack.sh``::
+
     su stack
     ./stack.sh
     
+5. You can source openrc in your shell, and then use the openstack command line tool to manage your devstack.::
+
+   souce  /opt/stack/devstack/openrc  admin admin
 
 Running Freezer tempest tests
 =============================
@@ -65,15 +69,16 @@ Running Freezer tempest tests
     uri_v3 = http://172.16.1.108/identity/v3
 
 
-3. Running freezer tempest tests::
+4. Running freezer tempest tests::
 
     cd /opt/stack/tempest
     tempest run -r freezer_tempest_plugin
 
-4. Running  one tempest test case::
+5. Running  one tempest test case::
 
     cd /opt/stack/tempest
     tempest run  -r  freezer_tempest_plugin.tests.freezer_api.api.test_api_jobs.TestFreezerApiJobs.test_api_jobs_post
    
  For more informatin, see:
+    https://docs.openstack.org/devstack/latest/index.html
     https://docs.openstack.org/tempest/latest/
