@@ -25,6 +25,12 @@
 - job:
     name: freezer-tempest-basic
     parent: devstack-tempest
+    # TODO(gmann): Remove the below nodeset setting to Bionic once
+    # bug https://bugs.launchpad.net/freezer/+bug/1896648 is fixed.
+    # Once nodeset is removed form here then devstack-tempest job
+    # will automatically run this job on Ubuntu Focal nodeset from
+    # Victoria gate onwards.
+    nodeset: openstack-single-node-bionic
     timeout: 7200
     required-projects:
       - openstack/devstack-gate
@@ -115,12 +121,14 @@
 - job:
     name: freezer-tempest-basic-ussuri
     parent: freezer-tempest-basic
+    nodeset: openstack-single-node-bionic
     override-checkout: stable/ussuri
 
 - job:
     name: freezer-tempest-basic-train
     parent: freezer-tempest-basic
     override-checkout: stable/train
+    nodeset: openstack-single-node-bionic
     vars:
       devstack_localrc:
         USE_PYTHON3: True
@@ -128,6 +136,7 @@
 - job:
     name: freezer-tempest-basic-stein
     parent: freezer-tempest-basic
+    nodeset: openstack-single-node-bionic
     override-checkout: stable/stein
     vars:
       devstack_localrc:
