@@ -27,7 +27,6 @@
     parent: devstack-tempest
     timeout: 7200
     required-projects:
-      - openstack/devstack-gate
       - openstack/python-openstackclient
       - openstack/swift
       - openstack/python-freezerclient
@@ -48,12 +47,10 @@
         s-container: false
         s-object: false
         s-proxy: false
-      devstack_localrc:
-        TEMPEST_PLUGINS: '/opt/stack/freezer-tempest-plugin'
+      tempest_plugins:
+        - freezer-tempest-plugin
       tempest_test_regex: '^(freezer_tempest_plugin.tests.freezer_api.)'
       tox_envlist: 'all'
-      tox_environment:
-        PYTHONUNBUFFERED: 'true'
       zuul_copy_output:
         /etc/hosts: logs
 
@@ -80,37 +77,10 @@
 
 - job:
     name: freezer-tempest-basic-sql
-    parent: devstack-tempest
-    timeout: 7200
-    required-projects:
-      - openstack/devstack-gate
-      - openstack/python-openstackclient
-      - openstack/python-freezerclient
-      - openstack/freezer
-      - openstack/freezer-api
-      - openstack/freezer-tempest-plugin
-      - openstack/tempest
+    parent: freezer-tempest-basic
     vars:
-      devstack_plugins:
-        freezer-api: https://opendev.org/openstack/freezer-api
-        freezer: https://opendev.org/openstack/freezer
-      devstack_services:
-        tls-proxy: false
-        freezer-api: true
-        tempest: true
-        s-account: false
-        s-container: false
-        s-object: false
-        s-proxy: false
       devstack_localrc:
         FREEZER_BACKEND: 'sqlalchemy'
-        TEMPEST_PLUGINS: '/opt/stack/freezer-tempest-plugin'
-      tempest_test_regex: '^(freezer_tempest_plugin.tests.freezer_api)'
-      tox_envlist: all
-      tox_environment:
-        PYTHONUNBUFFERED: 'true'
-      zuul_copy_output:
-        /etc/hosts: logs
 
 - job:
     name: freezer-tempest-basic-ussuri
