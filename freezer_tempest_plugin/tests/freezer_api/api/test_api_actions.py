@@ -13,7 +13,6 @@
 # under the License.
 
 from tempest.lib import decorators
-# from tempest.lib import exceptions
 
 from oslo_serialization import jsonutils as json
 
