@@ -30,7 +30,7 @@
     # Once nodeset is removed form here then devstack-tempest job
     # will automatically run this job on Ubuntu Focal nodeset from
     # Victoria gate onwards.
-    nodeset: openstack-single-node-bionic
+    # nodeset: openstack-single-node-bionic
     timeout: 7200
     required-projects:
       - openstack/python-openstackclient
