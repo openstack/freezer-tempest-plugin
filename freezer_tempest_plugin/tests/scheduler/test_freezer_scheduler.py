@@ -26,11 +26,11 @@ class TestFreezerCmdAction(base.BaseFreezerTest):
     def tearDown(self):
         super(TestFreezerCmdAction, self).tearDown()
 
-    @decorators.attr(type="gate")
-    def test_freezer_schedulers_restart(self):
-        args = ['freezer-scheduler', 'restart']
+#    @decorators.attr(type="gate")
+#    def test_freezer_schedulers_restart(self):
+#        args = ['freezer-scheduler', 'restart']
 
-        self.run_subprocess(args, "Freezer scheduler restart.")
+#        self.run_subprocess(args, "Freezer scheduler restart.")
 
     @decorators.attr(type="gate")
     def test_freezer_schedulers_stop(self):
@@ -38,11 +38,11 @@ class TestFreezerCmdAction(base.BaseFreezerTest):
 
         self.run_subprocess(args, "Freezer scheduler stop")
 
-    @decorators.attr(type="gate")
-    def test_freezer_schedulers_start(self):
-        args = ['freezer-scheduler', 'start']
+#    @decorators.attr(type="gate")
+#    def test_freezer_schedulers_start(self):
+#        args = ['freezer-scheduler', 'start']
 
-        self.run_subprocess(args, "Freezer scherduler start")
+#        self.run_subprocess(args, "Freezer scherduler start")
 
     @decorators.attr(type="gate")
     def test_freezer_schedulers_reload(self):

@@ -17,10 +17,10 @@
       queue: freezer
       jobs:
         - freezer-tempest-basic
+        - freezer-tempest-basic-sql
         - freezer-tempest-client
         - freezer-tempest-scheduler
         - freezer-tempest-agent
-        - freezer-tempest-basic-sql
 
 - job:
     name: freezer-tempest-basic
@@ -41,6 +41,8 @@
       - openstack/freezer-tempest-plugin
       - openstack/tempest
     vars:
+      devstack_localrc:
+        FREEZER_BACKEND: 'sqlalchemy'
       devstack_plugins:
         freezer-api: https://opendev.org/openstack/freezer-api
         freezer: https://opendev.org/openstack/freezer
