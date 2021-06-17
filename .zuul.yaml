@@ -47,7 +47,6 @@
         freezer-api: https://opendev.org/openstack/freezer-api
         freezer: https://opendev.org/openstack/freezer
       devstack_services:
-        tls-proxy: false
         freezer-api: true
         tempest: true
         swift: true
