@@ -9,6 +9,7 @@
         - freezer-tempest-scheduler
         - freezer-tempest-agent
         - freezer-tempest-basic-sql
+        - freezer-tempest-basic-xena
         - freezer-tempest-basic-wallaby
         - freezer-tempest-basic-victoria
         - freezer-tempest-basic-ussuri
@@ -89,6 +90,11 @@
     vars:
       devstack_localrc:
         FREEZER_BACKEND: 'sqlalchemy'
+
+- job:
+    name: freezer-tempest-basic-xena
+    parent: freezer-tempest-basic
+    override-checkout: stable/xena
 
 - job:
     name: freezer-tempest-basic-wallaby
