@@ -13,7 +13,6 @@
         - freezer-tempest-basic-wallaby
         - freezer-tempest-basic-victoria
         - freezer-tempest-basic-ussuri
-        - freezer-tempest-basic-train
 
     gate:
       queue: freezer
@@ -111,12 +110,3 @@
     parent: freezer-tempest-basic
     nodeset: openstack-single-node-bionic
     override-checkout: stable/ussuri
-
-- job:
-    name: freezer-tempest-basic-train
-    parent: freezer-tempest-basic
-    override-checkout: stable/train
-    nodeset: openstack-single-node-bionic
-    vars:
-      devstack_localrc:
-        USE_PYTHON3: True
