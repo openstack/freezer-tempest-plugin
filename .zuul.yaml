@@ -9,10 +9,10 @@
         - freezer-tempest-scheduler
         - freezer-tempest-agent
         - freezer-tempest-basic-sql
+        - freezer-tempest-basic-yoga
         - freezer-tempest-basic-xena
         - freezer-tempest-basic-wallaby
         - freezer-tempest-basic-victoria
-        - freezer-tempest-basic-ussuri
 
     gate:
       queue: freezer
@@ -91,6 +91,11 @@
         FREEZER_BACKEND: 'sqlalchemy'
 
 - job:
+    name: freezer-tempest-basic-yoga
+    parent: freezer-tempest-basic
+    override-checkout: stable/yoga
+
+- job:
     name: freezer-tempest-basic-xena
     parent: freezer-tempest-basic
     override-checkout: stable/xena
@@ -104,9 +109,3 @@
     name: freezer-tempest-basic-victoria
     parent: freezer-tempest-basic
     override-checkout: stable/victoria
-
-- job:
-    name: freezer-tempest-basic-ussuri
-    parent: freezer-tempest-basic
-    nodeset: openstack-single-node-bionic
-    override-checkout: stable/ussuri
