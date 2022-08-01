@@ -12,7 +12,6 @@
         - freezer-tempest-basic-yoga
         - freezer-tempest-basic-xena
         - freezer-tempest-basic-wallaby
-        - freezer-tempest-basic-victoria
 
     gate:
       queue: freezer
@@ -104,8 +103,3 @@
     name: freezer-tempest-basic-wallaby
     parent: freezer-tempest-basic
     override-checkout: stable/wallaby
-
-- job:
-    name: freezer-tempest-basic-victoria
-    parent: freezer-tempest-basic
-    override-checkout: stable/victoria
