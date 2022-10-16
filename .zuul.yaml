@@ -1,4 +1,5 @@
 - project:
+    queue: freezer
     templates:
       - check-requirements
       - tempest-plugin-jobs
@@ -8,16 +9,10 @@
         - freezer-tempest-client
         - freezer-tempest-scheduler
         - freezer-tempest-agent
-        - freezer-tempest-basic-sql
-        - freezer-tempest-basic-yoga
-        - freezer-tempest-basic-xena
-        - freezer-tempest-basic-wallaby
 
     gate:
-      queue: freezer
       jobs:
         - freezer-tempest-basic
-        - freezer-tempest-basic-sql
         - freezer-tempest-client
         - freezer-tempest-scheduler
         - freezer-tempest-agent
@@ -82,24 +77,10 @@
     vars:
       tempest_test_regex: '^(freezer_tempest_plugin.tests.freezer.agent.)'
 
+# NOTE(noonedeadpunk): Remove once will be dropped from all stable branches
 - job:
     name: freezer-tempest-basic-sql
     parent: freezer-tempest-basic
     vars:
       devstack_localrc:
         FREEZER_BACKEND: 'sqlalchemy'
-
-- job:
-    name: freezer-tempest-basic-yoga
-    parent: freezer-tempest-basic
-    override-checkout: stable/yoga
-
-- job:
-    name: freezer-tempest-basic-xena
-    parent: freezer-tempest-basic
-    override-checkout: stable/xena
-
-- job:
-    name: freezer-tempest-basic-wallaby
-    parent: freezer-tempest-basic
-    override-checkout: stable/wallaby
