@@ -12,12 +12,17 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
+import uuid
+
+from oslo_serialization import jsonutils as json
 from tempest.lib import decorators
 from tempest.lib import exceptions
 
-from oslo_serialization import jsonutils as json
-
 from freezer_tempest_plugin.tests.freezer_api.api import base
+
+
+fake_hostname = "myhost.mydomain.mytld"
+fake_client_id = f"01b0f00a-4ce2-11e6-beb8-9e71128cae77_{fake_hostname}"
 
 fake_job = {
     "job_actions":
@@ -50,10 +55,21 @@ fake_job = {
             "schedule_minute": "25",
         },
     "job_id": "blabla",
-    "client_id": "01b0f00a-4ce2-11e6-beb8-9e71128cae77_myhost.mydomain.mytld",
+    "client_id": fake_client_id,
     "user_id": "blabla",
     "description": "scheduled one shot"
 }
+
+
+def get_fake_client(client_id=None, hostname=None):
+    client_id = client_id or fake_client_id
+    hostname = hostname or fake_hostname
+    return {
+        "client_id": client_id,
+        'hostname': hostname,
+        'description': 'a test client',
+        'uuid': uuid.uuid4().hex,
+    }
 
 
 class TestFreezerApiJobs(base.BaseFreezerApiTest):
@@ -104,6 +120,10 @@ class TestFreezerApiJobs(base.BaseFreezerApiTest):
 
     @decorators.attr(type="gate")
     def test_api_jobs_post(self):
+        # Create the client to be used in the job
+        client = get_fake_client()
+        resp, response_body = self.freezer_api_client.post_clients(client)
+        self.assertEqual(201, resp.status)
 
         # Create the job with POST
         resp, response_body = self.freezer_api_client.post_jobs(fake_job)
@@ -145,9 +165,15 @@ class TestFreezerApiJobs(base.BaseFreezerApiTest):
                               fake_bad_job))
 
     def test_api_jobs_with_only_fqdn_succeeds(self):
+        client_id = "padawan-ccp-c1-m1-mgmt"
+        # Create the client to be used in the job
+        client = get_fake_client(client_id=client_id)
+        resp, response_body = self.freezer_api_client.post_clients(client)
+        self.assertEqual(201, resp.status)
+
         """Ensure that a job submitted with only an FQDN succeeds"""
         fqdn_only_job = fake_job
-        fqdn_only_job['client_id'] = 'padawan-ccp-c1-m1-mgmt'
+        fqdn_only_job['client_id'] = client_id
 
         # Attempt to post the job, should succeed
         resp, response_body = self.freezer_api_client.post_jobs(fqdn_only_job)
