@@ -150,7 +150,7 @@ class TestFreezerApiBackups(base.BaseFreezerApiTest):
         expected = self._build_expected_data(backup_id, metadata)
 
         # backup_id is generated automatically, we can't know it
-        del(response_body['backup_id'])
+        del response_body['backup_id']
 
         self.assertEqual(200, resp.status)
         self.assertEqual(expected, response_body)
@@ -197,7 +197,7 @@ class TestFreezerApiBackups(base.BaseFreezerApiTest):
         expected = self._build_expected_data(backup_id, metadata)
 
         # backup_id is generated automatically, we can't know it
-        del(response_body['backup_id'])
+        del response_body['backup_id']
 
         self.assertEqual(200, resp.status)
         self.assertEqual(expected, response_body)
