@@ -38,8 +38,6 @@
       - openstack/freezer-tempest-plugin
       - openstack/tempest
     vars: &base_vars
-      devstack_localrc:
-        FREEZER_BACKEND: 'sqlalchemy'
       devstack_plugins:
         freezer-api: https://opendev.org/openstack/freezer-api
         freezer: https://opendev.org/openstack/freezer
@@ -92,6 +90,3 @@
 - job:
     name: freezer-tempest-basic-sql
     parent: freezer-tempest-basic
-    vars:
-      devstack_localrc:
-        FREEZER_BACKEND: 'sqlalchemy'
