@@ -173,7 +173,7 @@ class FreezerApiClient(rest_client.RestClient):
             if params:
                 uri += '?%s' % urllib.parse.urlencode(params)
         else:
-            uri = '/v2/{0}/sessions/'.format(self.tenant_id, session_id)
+            uri = '/v2/{0}/sessions/{1}'.format(self.tenant_id, session_id)
 
         resp, response_body = self.get(uri)
         return resp, response_body
