@@ -47,6 +47,21 @@ class BaseFreezerCliTest(base.BaseFreezerTest):
         )
         cls.cli.cli_dir = ''
 
+    def wait_for_client_registration(self, client_id, timeout=60):
+        start = time.time()
+        while True:
+            try:
+                output = self.cli.freezer_client(action='client-list')
+                if client_id in output:
+                    return client_id
+            except Exception:
+                pass
+
+            if time.time() - start > timeout:
+                self.fail("Client '{}' not registered after {}s"
+                          .format(client_id, timeout))
+            time.sleep(1)
+
     def delete_job(self, job_id):
         self.cli.freezer_client(action='job-delete', params=job_id)
 
@@ -245,15 +260,16 @@ class TestFreezerScenario(BaseFreezerCliTest):
         self.cli.freezer_scheduler(action='start',
                                    flags='-c test_node '
                                          '-f /tmp/freezer_tempest_job_dir/')
+        self.client_id = self.wait_for_client_registration('test_node')
 
     def tearDown(self):
         super(TestFreezerScenario, self).tearDown()
         self.source_tree.cleanup()
         self.dest_tree.cleanup()
-
         self.cli.freezer_scheduler(action='stop',
                                    flags='-c test_node '
                                          '-f /tmp/freezer_tempest_job_dir/')
+        self.cli.freezer_client(action='client-delete', params=self.client_id)
 
     def test_simple_backup(self):
         backup_job = {
