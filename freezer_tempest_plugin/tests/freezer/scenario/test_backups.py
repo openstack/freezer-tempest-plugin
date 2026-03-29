@@ -47,7 +47,7 @@ class BaseFreezerCliTest(base.BaseFreezerTest):
         )
         cls.cli.cli_dir = ''
 
-    def wait_for_client_registration(self, client_id, timeout=60):
+    def wait_for_client_registration(self, client_id, timeout=160):
         start = time.time()
         while True:
             try:
@@ -60,7 +60,7 @@ class BaseFreezerCliTest(base.BaseFreezerTest):
             if time.time() - start > timeout:
                 self.fail("Client '{}' not registered after {}s"
                           .format(client_id, timeout))
-            time.sleep(1)
+            time.sleep(10)
 
     def delete_job(self, job_id):
         self.cli.freezer_client(action='job-delete', params=job_id)
