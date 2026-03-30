@@ -18,12 +18,14 @@ import shutil
 import tempfile
 import time
 
+from tempest import config
 from tempest.lib.cli import base as cli_base
 from tempest.lib.cli import output_parser
 
 from oslo_serialization import jsonutils as json
 
 from freezer_tempest_plugin.tests.freezer.agent import base
+CONF = config.CONF
 
 JOB_TABLE_RESULT_COLUMN = 3
 
@@ -132,9 +134,16 @@ class CLIClientWithFreezer(cli_base.CLIClient):
         """
 
         flags += ' --os-endpoint-type %s' % endpoint_type
-        flags += ' --os-cacert /etc/ssl/certs/ca-certificates.crt'
-        flags += ' --os-project-domain-name Default'
-        flags += ' --os-user-domain-name Default'
+        ca_cert = \
+            os.environ.get('OS_CACERT') or CONF.identity.ca_certificates_file
+        if ca_cert:
+            flags += ' --os-cacert %s' % ca_cert
+        project_domain = getattr(
+            CONF.identity, 'project_domain_name', None) or 'Default'
+        user_domain = getattr(
+            CONF.identity, 'user_domain_name', None) or 'Default'
+        flags += ' --os-project-domain-name %s' % project_domain
+        flags += ' --os-user-domain-name %s' % user_domain
 
         return self.cmd_with_auth(
             'freezer-scheduler', action, flags, params, fail_ok, merge_stderr)
@@ -142,9 +151,16 @@ class CLIClientWithFreezer(cli_base.CLIClient):
     def freezer_client(self, action, flags='', params='', fail_ok=False,
                        endpoint_type='publicURL', merge_stderr=True):
         flags += ' --os-endpoint-type %s' % endpoint_type
-        flags += ' --os-cacert /etc/ssl/certs/ca-certificates.crt'
-        flags += ' --os-project-domain-name Default'
-        flags += ' --os-user-domain-name Default'
+        ca_cert = \
+            os.environ.get('OS_CACERT') or CONF.identity.ca_certificates_file
+        if ca_cert:
+            flags += ' --os-cacert %s' % ca_cert
+        project_domain = getattr(
+            CONF.identity, 'project_domain_name', None) or 'Default'
+        user_domain = getattr(
+            CONF.identity, 'user_domain_name', None) or 'Default'
+        flags += ' --os-project-domain-name %s' % project_domain
+        flags += ' --os-user-domain-name %s' % user_domain
         return self.cmd_with_auth(
             'freezer', action, flags, params, fail_ok, merge_stderr)
 
