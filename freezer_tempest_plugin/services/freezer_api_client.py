@@ -12,17 +12,13 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-# import urllib
-
 import urllib.parse
 
-from oslo_log import log
 from oslo_serialization import jsonutils as json
 from tempest import config
 from tempest.lib.common import rest_client
 
 CONF = config.CONF
-LOG = log.getLogger(__name__)
 
 
 class FreezerApiClient(rest_client.RestClient):
@@ -33,9 +29,6 @@ class FreezerApiClient(rest_client.RestClient):
             CONF.backup.region or CONF.identity.region,
             endpoint_type=CONF.backup.endpoint_type
         )
-        LOG.info(self)
-        if self.tenant_id:
-            LOG.info(self.tenant_id)
 
     def get_version(self):
         resp, response_body = self.get('/')
@@ -85,7 +78,7 @@ class FreezerApiClient(rest_client.RestClient):
                 uri += '?%s' % urllib.parse.urlencode(params)
 
         else:
-            uri = 'v2/{0}/clients/{1}'.format(self.tenant_id, client_id)
+            uri = '/v2/{0}/clients/{1}'.format(self.tenant_id, client_id)
 
         resp, response_body = self.get(uri)
         return resp, response_body
