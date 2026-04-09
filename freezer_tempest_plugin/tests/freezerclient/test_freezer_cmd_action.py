@@ -16,6 +16,8 @@ from tempest.lib import decorators
 
 from freezer_tempest_plugin.tests.freezerclient import base
 
+from oslo_serialization import jsonutils as json
+
 
 class TestFreezerCmdAction(base.BaseFreezerTest):
     def __init__(self, *args, **kwargs):
@@ -62,22 +64,22 @@ class TestFreezerCmdAction(base.BaseFreezerTest):
 
     @decorators.attr(type="gate")
     def test_freezer_cmd_actionshow(self):
-        args = ['freezer', 'action-create', '--file',
+        args = ['freezer', 'action-create', '-f', 'json', '--file',
                 self.filename]
         out, err = self.run_subprocess(args, "Create a new action")
-        action_id = err.split(' ')[1]
+        action = json.loads(out)
 
-        args = ['freezer', 'action-show', action_id]
+        args = ['freezer', 'action-show', action['Action ID']]
 
-        self.run_subprocess(args, "show a action")
+        self.run_subprocess(args, "show an action")
 
     @decorators.attr(type="gate")
     def test_freezer_cmd_actiondelete(self):
-        args = ['freezer', 'action-create', '--file',
+        args = ['freezer', 'action-create', '-f', 'json', '--file',
                 self.filename]
         out, err = self.run_subprocess(args, "Create a new action")
-        action_id = err.split(' ')[1]
+        action = action = json.loads(out)
 
-        args = ['freezer', 'action-delete', action_id]
+        args = ['freezer', 'action-delete', action['Action ID']]
 
-        self.run_subprocess(args, "delete a action")
+        self.run_subprocess(args, "delete an action")

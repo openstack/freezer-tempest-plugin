@@ -53,7 +53,8 @@ class BaseFreezerCliTest(base.BaseFreezerTest):
         start = time.time()
         while True:
             try:
-                output = self.cli.freezer_client(action='client-list')
+                output = self.cli.freezer_client(action='client-list',
+                                                 merge_stderr=False)
                 if client_id in output:
                     return client_id
             except Exception:
@@ -75,15 +76,32 @@ class BaseFreezerCliTest(base.BaseFreezerTest):
 
             output = self.cli.freezer_client(
                 action='job-create',
-                params='--file {} --client {}'.format(job_file.name,
-                                                      job_json['client_id']))
-            job_id = output.split()[1]
-            expected = 'Job {} created'.format(job_id)
-            self.assertEqual(expected, output.strip())
+                params='-f json --file {} --client {}'.format(
+                    job_file.name,
+                    job_json['client_id']),
+                merge_stderr=False)
+            job_result = json.loads(output)
+            expected = {
+                "Job ID": job_result['Job ID'],
+                "Client ID": job_json['client_id'],
+                "User ID": self.os_primary.credentials.user_id,
+                "Session ID": "",
+                "Description": job_json['description'],
+                "Start Date": "",
+                "End Date": "",
+                "Interval": "",
+                "Status": "",
+                "Result": "",
+                "Current pid": "",
+                "Event": ""
+            }
+            # NOTE: it's kinda hard to compare strings that should be json
+            del job_result['Actions']
+            self.assertEqual(expected, job_result)
 
-            self.addCleanup(self.delete_job, job_id)
+            self.addCleanup(self.delete_job, job_result['Job ID'])
 
-            return job_id
+            return job_result['Job ID']
 
     def find_job_in_job_list(self, job_id):
         job_list = output_parser.table(
