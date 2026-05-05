@@ -54,7 +54,6 @@ fake_job = {
             "schedule_hour": "03",
             "schedule_minute": "25",
         },
-    "job_id": "blabla",
     "client_id": fake_client_id,
     "user_id": "blabla",
     "description": "scheduled one shot"
@@ -125,26 +124,26 @@ class TestFreezerApiJobs(base.BaseFreezerApiTest):
         resp, response_body = self.freezer_api_client.post_clients(client)
         self.assertEqual(201, resp.status)
 
+        self.addCleanup(self.freezer_api_client.delete_clients,
+                        client['client_id'])
+
         # Create the job with POST
-        resp, response_body = self.freezer_api_client.post_jobs(fake_job)
+        resp, response_body = self.freezer_api_client.post_jobs(
+            fake_job.copy())
         self.assertEqual(201, resp.status)
 
         self.assertIn('job_id', response_body)
         job_id = response_body['job_id']
+        self.addCleanup(self.freezer_api_client.delete_jobs, job_id)
 
         # Check that the job has the correct values
         resp, response_body = self.freezer_api_client.get_jobs(job_id)
         self.assertEqual(200, resp.status)
 
-        # Delete the job
-        resp, response_body = self.freezer_api_client.delete_jobs(
-            job_id)
-        self.assertEqual(204, resp.status)
-
     @decorators.attr(type="gate")
     def test_api_jobs_with_invalid_client_project_id_fail(self):
         """Ensure that a job submitted with a bad client_id project id fails"""
-        fake_bad_job = fake_job
+        fake_bad_job = fake_job.copy()
         fake_bad_job['client_id'] = 'bad%project$id_host.domain.tld'
 
         # Create the job with POST
@@ -155,7 +154,7 @@ class TestFreezerApiJobs(base.BaseFreezerApiTest):
     @decorators.attr(type="gate")
     def test_api_jobs_with_invalid_client_host_fail(self):
         """Ensure that a job submitted with a bad client_id hostname fails"""
-        fake_bad_job = fake_job
+        fake_bad_job = fake_job.copy()
         fake_bad_job['client_id'] = ("01b0f00a-4ce2-11e6-beb8-9e71128cae77"
                                      "_bad_hostname.bad/domain.b")
 
@@ -171,10 +170,15 @@ class TestFreezerApiJobs(base.BaseFreezerApiTest):
         resp, response_body = self.freezer_api_client.post_clients(client)
         self.assertEqual(201, resp.status)
 
+        self.addCleanup(self.freezer_api_client.delete_clients, client_id)
+
         """Ensure that a job submitted with only an FQDN succeeds"""
-        fqdn_only_job = fake_job
+        fqdn_only_job = fake_job.copy()
         fqdn_only_job['client_id'] = client_id
 
         # Attempt to post the job, should succeed
         resp, response_body = self.freezer_api_client.post_jobs(fqdn_only_job)
         self.assertEqual(201, resp.status)
+
+        job_id = response_body['job_id']
+        self.addCleanup(self.freezer_api_client.delete_jobs, job_id)
