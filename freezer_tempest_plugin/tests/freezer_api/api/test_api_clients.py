@@ -41,6 +41,10 @@ class TestFreezerApiClients(base.BaseFreezerApiTest):
         response_body_json = json.loads(response_body)
         self.assertIn('clients', response_body_json)
         clients = response_body_json['clients']
+        # Centralized clients are globally visible, so filter them out
+        # to avoid failures from parallel tests running a central scheduler.
+        clients = [c for c in clients
+                   if not c.get('client', {}).get('is_central')]
         self.assertEmpty(clients)
 
     @decorators.attr(type="gate")

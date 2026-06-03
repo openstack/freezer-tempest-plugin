@@ -15,12 +15,15 @@
 import hashlib
 import os
 import shutil
+import subprocess
 import tempfile
 import time
 
 from tempest import config
 from tempest.lib.cli import base as cli_base
 from tempest.lib.cli import output_parser
+from tempest.lib import decorators
+from tempest.lib import exceptions
 
 from oslo_serialization import jsonutils as json
 
@@ -48,6 +51,128 @@ class BaseFreezerCliTest(base.BaseFreezerTest):
             cli_dir='/usr/local/bin'  # devstack default
         )
         cls.cli.cli_dir = ''
+
+        if hasattr(cls, 'os_admin'):
+            cls.admin_cli = CLIClientWithFreezer(
+                username=cls.os_admin.credentials.username,
+                # fails if the password contains an unescaped $ sign
+                password=cls.os_admin.credentials.password.replace('$', '$$'),
+                tenant_name=cls.os_admin.credentials.project_name,
+                uri=cls.get_auth_url(),
+                cli_dir='/usr/local/bin'  # devstack default
+            )
+            cls.admin_cli.cli_dir = ''
+
+    def setUp(self):
+        super(BaseFreezerCliTest, self).setUp()
+        self.schedulers = []
+
+    def tearDown(self):
+        for proc in self.schedulers:
+            try:
+                proc.terminate()
+                proc.wait()
+            except Exception:
+                pass
+        super(BaseFreezerCliTest, self).tearDown()
+
+    def _get_service_credentials(self):
+        """Try to load freezer service credentials from freezer-api.conf"""
+        config_path = '/etc/freezer/freezer-api.conf'
+        if os.path.exists(config_path):
+            import configparser
+            config = configparser.ConfigParser()
+            try:
+                config.read(config_path)
+                if config.has_section('keystone_authtoken'):
+                    sect = 'keystone_authtoken'
+                    return {
+                        'username': config.get(sect, 'username',
+                                               fallback=None),
+                        'password': config.get(sect, 'password',
+                                               fallback=None),
+                        'project_name': config.get(sect, 'project_name',
+                                                   fallback=None),
+                        'user_domain_name': config.get(
+                            sect, 'user_domain_name', fallback='Default'),
+                        'project_domain_name': config.get(
+                            sect, 'project_domain_name', fallback='Default'),
+                    }
+            except Exception:
+                pass
+        return None
+
+    def _start_scheduler(self, client_id, jobs_dir,
+                         centralized=False, extra_flags=None):
+        cmd = [
+            'freezer-scheduler',
+            '--debug',
+            '--scheduler-no-daemon',
+            '-c', client_id,
+            '-f', jobs_dir,
+            '--os-endpoint-type', 'publicURL'
+        ]
+        if centralized:
+            cmd.append('--scheduler-centralized-scheduler')
+        if extra_flags:
+            cmd.extend(extra_flags)
+
+        ca_cert = (os.environ.get('OS_CACERT')
+                   or CONF.identity.ca_certificates_file)
+        if ca_cert:
+            cmd += ['--os-cacert', ca_cert]
+        project_domain = (
+            getattr(CONF.identity,
+                    'project_domain_name', None)
+            or 'Default')
+        user_domain = (
+            getattr(CONF.identity,
+                    'user_domain_name', None)
+            or 'Default')
+        cmd += ['--os-project-domain-name', project_domain]
+        cmd += ['--os-user-domain-name', user_domain]
+        cmd += ['start']
+
+        env = os.environ.copy()
+        if centralized:
+            service_creds = self._get_service_credentials()
+            if service_creds:
+                env['OS_USERNAME'] = service_creds['username']
+                env['OS_PASSWORD'] = service_creds['password']
+                env['OS_PROJECT_NAME'] = service_creds['project_name']
+                env['OS_TENANT_NAME'] = service_creds['project_name']
+                env['OS_PROJECT_DOMAIN_NAME'] = (
+                    service_creds['project_domain_name'])
+                env['OS_USER_DOMAIN_NAME'] = (
+                    service_creds['user_domain_name'])
+            else:
+                env['OS_USERNAME'] = (
+                    self.os_admin.credentials.username)
+                env['OS_PASSWORD'] = (
+                    self.os_admin.credentials.password)
+                env['OS_PROJECT_NAME'] = (
+                    self.os_admin.credentials.project_name)
+                env['OS_TENANT_NAME'] = (
+                    self.os_admin.credentials.project_name)
+                env['OS_PROJECT_DOMAIN_NAME'] = (
+                    self.os_admin.credentials.project_domain_name)
+                env['OS_USER_DOMAIN_NAME'] = (
+                    self.os_admin.credentials.user_domain_name)
+        env['OS_AUTH_URL'] = self.get_auth_url()
+
+        # Write stdout/stderr to LOGDIR or fallback to jobs_dir
+        log_dir = os.environ.get('LOGDIR') or '/opt/stack/logs'
+        if not os.path.exists(log_dir) or not os.access(log_dir, os.W_OK):
+            log_dir = jobs_dir
+        log_path = os.path.join(
+            log_dir, 'freezer-scheduler-{}.log'.format(client_id))
+
+        with open(log_path, 'w') as log_file:
+            proc = subprocess.Popen(
+                cmd, env=env,
+                stdout=log_file, stderr=log_file)
+        self.schedulers.append(proc)
+        return proc
 
     def wait_for_client_registration(self, client_id, timeout=160):
         start = time.time()
@@ -103,9 +228,10 @@ class BaseFreezerCliTest(base.BaseFreezerTest):
 
             return job_result['Job ID']
 
-    def find_job_in_job_list(self, job_id):
+    def find_job_in_job_list(self, job_id, client_id='test_node'):
         job_list = output_parser.table(
-            self.cli.freezer_client(action='job-list', params='-C test_node'))
+            self.cli.freezer_client(
+                action='job-list', params='-C {}'.format(client_id)))
 
         for row in job_list['values']:
             if row[0].strip() == job_id.strip():
@@ -113,11 +239,11 @@ class BaseFreezerCliTest(base.BaseFreezerTest):
 
         self.fail('Could not find job: {}'.format(job_id))
 
-    def wait_for_job_status(self, job_id, timeout=720):
+    def wait_for_job_status(self, job_id, client_id='test_node', timeout=720):
         start = time.time()
 
         while True:
-            row = self.find_job_in_job_list(job_id)
+            row = self.find_job_in_job_list(job_id, client_id=client_id)
 
             if row[JOB_TABLE_RESULT_COLUMN]:
                 return
@@ -125,10 +251,11 @@ class BaseFreezerCliTest(base.BaseFreezerTest):
                 self.fail("Status of job '{}' is '{}'."
                           .format(job_id, row[JOB_TABLE_RESULT_COLUMN]))
             else:
-                time.sleep(1)
+                time.sleep(5)
 
-    def assertJobColumnEqual(self, job_id, column, expected):
-        row = self.find_job_in_job_list(job_id)
+    def assertJobColumnEqual(self, job_id, column, expected,
+                             client_id='test_node'):
+        row = self.find_job_in_job_list(job_id, client_id=client_id)
         self.assertEqual(expected, row[column])
 
 
@@ -291,19 +418,20 @@ class TestFreezerScenario(BaseFreezerCliTest):
         self.source_tree.add_random_data()
         self.dest_tree = Temp_Tree()
 
-        self.cli.freezer_scheduler(action='start',
-                                   flags='-c test_node '
-                                         '-f /tmp/freezer_tempest_job_dir/')
-        self.client_id = self.wait_for_client_registration('test_node')
+        self.jobs_dir = tempfile.mkdtemp(
+            prefix='freezer_tempest_job_dir_')
+        self.addCleanup(shutil.rmtree, self.jobs_dir)
+
+        self._start_scheduler('test_node', self.jobs_dir)
+        self.client_id = self.wait_for_client_registration(
+            'test_node')
 
     def tearDown(self):
         super(TestFreezerScenario, self).tearDown()
         self.source_tree.cleanup()
         self.dest_tree.cleanup()
-        self.cli.freezer_scheduler(action='stop',
-                                   flags='-c test_node '
-                                         '-f /tmp/freezer_tempest_job_dir/')
-        self.cli.freezer_client(action='client-delete', params=self.client_id)
+        self.cli.freezer_client(
+            action='client-delete', params=self.client_id)
 
     def test_simple_backup(self):
         backup_job = {
@@ -352,5 +480,270 @@ class TestFreezerScenario(BaseFreezerCliTest):
         self.wait_for_job_status(restore_job_id)
         self.assertJobColumnEqual(restore_job_id, JOB_TABLE_RESULT_COLUMN,
                                   'success')
+
+        self.assertTrue(self.source_tree.is_equal(self.dest_tree))
+
+
+class TestFreezerCentralScenario(BaseFreezerCliTest):
+    credentials = ['primary', 'admin']
+
+    def setUp(self):
+        super(TestFreezerCentralScenario, self).setUp()
+        self.source_tree = Temp_Tree()
+        self.source_tree.add_random_data()
+        self.dest_tree = Temp_Tree()
+
+        self.central_jobs_dir = tempfile.mkdtemp(
+            prefix='freezer_central_job_dir_')
+        self.addCleanup(shutil.rmtree, self.central_jobs_dir)
+        self.restricted_jobs_dir = tempfile.mkdtemp(
+            prefix='freezer_restricted_job_dir_')
+        self.addCleanup(shutil.rmtree, self.restricted_jobs_dir)
+
+        # Start central scheduler as admin
+        self._start_scheduler(
+            'central_node', self.central_jobs_dir,
+            centralized=True)
+        self.client_id = self.wait_for_client_registration(
+            'central_node')
+
+    def tearDown(self):
+        super(TestFreezerCentralScenario, self).tearDown()
+        self.source_tree.cleanup()
+        self.dest_tree.cleanup()
+
+        service_creds = self._get_service_credentials()
+        if service_creds:
+            try:
+                service_cli = CLIClientWithFreezer(
+                    username=service_creds['username'],
+                    password=service_creds['password'].replace('$', '$$'),
+                    tenant_name=service_creds['project_name'],
+                    uri=self.get_auth_url(),
+                    cli_dir=''
+                )
+                service_cli.freezer_client(
+                    action='client-delete',
+                    params=self.client_id,
+                    fail_ok=True)
+            except Exception:
+                pass
+        else:
+            self.admin_cli.freezer_client(
+                action='client-delete',
+                params=self.client_id,
+                fail_ok=True)
+
+    @decorators.attr(type="gate")
+    def test_freezer_client_shows_central_clients_to_other_users(self):
+        output = self.cli.freezer_client(action='client-list')
+        self.assertIn('central_node', output)
+
+    @decorators.attr(type="gate")
+    def test_central_scheduler_ignores_job_without_trust(self):
+        # Create a backup job targeting the central client
+        backup_job = {
+            "client_id": "central_node",
+            "job_actions": [
+                {
+                    "freezer_action": {
+                        "action": "backup",
+                        "mode": "fs",
+                        "storage": "local",
+                        "backup_name": "no_trust_backup",
+                        "path_to_backup": self.source_tree.path,
+                        "container": "/tmp/freezer_no_trust/",
+                    },
+                    "max_retries": 1,
+                    "max_retries_interval": 10
+                }
+            ],
+            "description": "no trust test backup"
+        }
+        job_id = self.create_job(backup_job)
+
+        # Regular user (primary) updates the job to remove user_credentials
+        # (removing the trust)
+        update_json = {
+            "user_credentials": {}
+        }
+        with tempfile.NamedTemporaryFile(
+                mode='w', delete=False) as update_file:
+            update_file.write(json.dumps(update_json))
+            update_file.flush()
+            self.addCleanup(os.remove, update_file.name)
+            self.cli.freezer_client(
+                action='job-update',
+                params='{} {}'.format(job_id, update_file.name)
+            )
+
+        # Try to start the job
+        self.cli.freezer_client(action='job-start', params=job_id)
+
+        # Wait a few seconds to let scheduler poll/process it
+        time.sleep(10)
+
+        # Assert status remains empty/unchanged (it wasn't executed)
+        self.assertJobColumnEqual(
+            job_id, JOB_TABLE_RESULT_COLUMN, '', client_id='central_node')
+
+    @decorators.attr(type="gate")
+    def test_scheduler_capabilities_restriction(self):
+        # Start a restricted scheduler on primary node
+        self._start_scheduler(
+            'cap_node',
+            self.restricted_jobs_dir,
+            centralized=False,
+            extra_flags=[
+                '--capabilities-supported-actions', 'restore',
+                '--capabilities-supported-storages', 'swift',
+                '--capabilities-supported-engines', 'nova'
+            ]
+        )
+        self.wait_for_client_registration('cap_node')
+
+        self.addCleanup(
+            self.cli.freezer_client,
+            action='client-delete', params='cap_node')
+
+        # 1. Job requiring forbidden action "backup"
+        job_actions_forbidden = {
+            "client_id": "cap_node",
+            "job_actions": [
+                {
+                    "freezer_action": {
+                        "action": "backup",
+                        "mode": "fs",
+                        "storage": "swift",
+                        "engine": "nova",
+                        "engine_name": "nova",
+                        "backup_name": "cap_backup1",
+                        "container": "container1"
+                    }
+                }
+            ],
+            "description": "restricted action job"
+        }
+        self.assertRaises(exceptions.CommandFailed,
+                          self.create_job, job_actions_forbidden)
+
+        # 2. Job requiring forbidden storage "local" (locking local storage)
+        job_storage_forbidden = {
+            "client_id": "cap_node",
+            "job_actions": [
+                {
+                    "freezer_action": {
+                        "action": "restore",
+                        "mode": "fs",
+                        "storage": "local",
+                        "engine": "nova",
+                        "engine_name": "nova",
+                        "backup_name": "cap_backup2",
+                        "container": "container2"
+                    }
+                }
+            ],
+            "description": "restricted storage job"
+        }
+        self.assertRaises(exceptions.CommandFailed,
+                          self.create_job, job_storage_forbidden)
+
+        # 3. Job requiring forbidden engine "tar"
+        job_engine_forbidden = {
+            "client_id": "cap_node",
+            "job_actions": [
+                {
+                    "freezer_action": {
+                        "action": "restore",
+                        "mode": "fs",
+                        "storage": "swift",
+                        "engine": "tar",
+                        "engine_name": "tar",
+                        "backup_name": "cap_backup3",
+                        "container": "container3"
+                    }
+                }
+            ],
+            "description": "restricted engine job"
+        }
+        self.assertRaises(exceptions.CommandFailed,
+                          self.create_job, job_engine_forbidden)
+
+        # 4. Allowed job matching restricted capabilities
+        job_allowed = {
+            "client_id": "cap_node",
+            "job_actions": [
+                {
+                    "freezer_action": {
+                        "action": "restore",
+                        "mode": "fs",
+                        "storage": "swift",
+                        "engine": "nova",
+                        "engine_name": "nova",
+                        "backup_name": "cap_backup_allowed",
+                        "container": "container_allowed"
+                    }
+                }
+            ],
+            "description": "allowed job"
+        }
+        job_id_allowed = self.create_job(job_allowed)
+        self.cli.freezer_client(action='job-start', params=job_id_allowed)
+
+        # Wait a few seconds to let scheduler poll/process it
+        # Since it's allowed, scheduler should process it and status
+        # will become non-empty (e.g., 'fail' or similar).
+        self.wait_for_job_status(job_id_allowed, client_id='cap_node')
+
+    @decorators.attr(type="gate")
+    def test_central_backup_restore_flow(self):
+        backup_job = {
+            "client_id": "central_node",
+            "job_actions": [
+                {
+                    "freezer_action": {
+                        "action": "backup",
+                        "mode": "fs",
+                        "storage": "local",
+                        "backup_name": "central_backup",
+                        "path_to_backup": self.source_tree.path,
+                        "container": "/tmp/freezer_central_test/",
+                    },
+                    "max_retries": 3,
+                    "max_retries_interval": 60
+                }
+            ],
+            "description": "a central test backup"
+        }
+        restore_job = {
+            "client_id": "central_node",
+            "job_actions": [
+                {
+                    "freezer_action": {
+                        "action": "restore",
+                        "storage": "local",
+                        "restore_abs_path": self.dest_tree.path,
+                        "backup_name": "central_backup",
+                        "container": "/tmp/freezer_central_test/",
+                    },
+                    "max_retries": 3,
+                    "max_retries_interval": 60
+                }
+            ],
+            "description": "a central test restore"
+        }
+
+        backup_job_id = self.create_job(backup_job)
+        self.cli.freezer_client(action='job-start', params=backup_job_id)
+        self.wait_for_job_status(backup_job_id, client_id='central_node')
+        self.assertJobColumnEqual(
+            backup_job_id, JOB_TABLE_RESULT_COLUMN, 'success',
+            client_id='central_node')
+
+        restore_job_id = self.create_job(restore_job)
+        self.wait_for_job_status(restore_job_id, client_id='central_node')
+        self.assertJobColumnEqual(
+            restore_job_id, JOB_TABLE_RESULT_COLUMN, 'success',
+            client_id='central_node')
 
         self.assertTrue(self.source_tree.is_equal(self.dest_tree))
