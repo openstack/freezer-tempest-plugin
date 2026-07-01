@@ -12,6 +12,7 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
+import configparser
 import hashlib
 import os
 import shutil
@@ -78,50 +79,105 @@ class BaseFreezerCliTest(base.BaseFreezerTest):
         super(BaseFreezerCliTest, self).tearDown()
 
     def _get_service_credentials(self):
-        """Try to load freezer service credentials from freezer-api.conf"""
-        config_path = '/etc/freezer/freezer-api.conf'
-        if os.path.exists(config_path):
-            import configparser
-            config = configparser.ConfigParser()
-            try:
-                config.read(config_path)
-                if config.has_section('keystone_authtoken'):
-                    sect = 'keystone_authtoken'
-                    return {
-                        'username': config.get(sect, 'username',
-                                               fallback=None),
-                        'password': config.get(sect, 'password',
-                                               fallback=None),
-                        'project_name': config.get(sect, 'project_name',
-                                                   fallback=None),
-                        'user_domain_name': config.get(
-                            sect, 'user_domain_name', fallback='Default'),
-                        'project_domain_name': config.get(
-                            sect, 'project_domain_name', fallback='Default'),
-                    }
-            except Exception:
-                pass
+        """Try to load freezer service credentials from config files"""
+        def get_opt(config, sect, *keys):
+            return next(
+                (config.get(sect, k) for k in keys
+                 if config.has_option(sect, k)),
+                None
+            )
+
+        for config_path, sect in [
+            ('/etc/freezer/freezer-api.conf', 'keystone_authtoken'),
+            ('/etc/freezer/scheduler.conf', 'service_auth'),
+            ('/etc/freezer/scheduler.conf', 'keystone_authtoken'),
+        ]:
+            if os.path.exists(config_path):
+                config = configparser.ConfigParser()
+                try:
+                    config.read(config_path)
+                    if config.has_section(sect):
+                        project_name = get_opt(
+                            config, sect,
+                            'project_name', 'project-name',
+                            'tenant_name', 'tenant-name',
+                            'os_project_name', 'os-project-name'
+                        )
+                        return {
+                            'username': get_opt(config, sect, 'username',
+                                                'os_username', 'os-username'),
+                            'password': get_opt(config, sect, 'password',
+                                                'os_password', 'os-password'),
+                            'project_name': project_name,
+                            'user_domain_name': get_opt(
+                                config, sect,
+                                'user_domain_name', 'user-domain-name',
+                                'os_user_domain_name', 'os-user-domain-name'
+                            ) or 'Default',
+                            'project_domain_name': get_opt(
+                                config, sect,
+                                'project_domain_name', 'project-domain-name',
+                                'os_project_domain_name',
+                                'os-project-domain-name'
+                            ) or 'Default',
+                        }
+                except Exception:
+                    continue
         return None
 
     def _start_scheduler(self, client_id, jobs_dir,
                          centralized=False, extra_flags=None):
+        endpoint_type = getattr(CONF.backup, 'endpoint_type', 'publicURL')
         cmd = [
             'freezer-scheduler',
             '--debug',
             '--scheduler-no-daemon',
             '-c', client_id,
             '-f', jobs_dir,
-            '--os-endpoint-type', 'publicURL'
+            '--os-endpoint-type', endpoint_type,
+            '--service_auth-endpoint-type', endpoint_type,
         ]
         if centralized:
             cmd.append('--scheduler-centralized-scheduler')
+        else:
+            cmd.append('--scheduler-nocentralized-scheduler')
+
+        # Override default capabilities to support all modes (including fs
+        # and local) to isolate the test execution from any host config
+        # restrictions.
+        extra_keys = ([f.lstrip('-') for f in extra_flags]
+                      if extra_flags else [])
+        if not any('capabilities-supported-actions' in k for k in extra_keys):
+            cmd += [
+                '--capabilities-supported-actions',
+                'backup,restore,info,admin,exec'
+            ]
+        if not any('capabilities-supported-modes' in k for k in extra_keys):
+            cmd += [
+                '--capabilities-supported-modes',
+                'fs,mongo,mysql,sqlserver,cinder,glance,cindernative,nova'
+            ]
+        if not any('capabilities-supported-storages' in k for k in extra_keys):
+            cmd += [
+                '--capabilities-supported-storages',
+                'local,swift,ssh,s3,ftp,ftps'
+            ]
+        if not any('capabilities-supported-engines' in k for k in extra_keys):
+            cmd += [
+                '--capabilities-supported-engines',
+                'tar,rsync,rsyncv2,nova,osbrick,glance'
+            ]
+
         if extra_flags:
             cmd.extend(extra_flags)
 
         ca_cert = (os.environ.get('OS_CACERT')
                    or CONF.identity.ca_certificates_file)
         if ca_cert:
-            cmd += ['--os-cacert', ca_cert]
+            cmd += [
+                '--os-cacert', ca_cert,
+                '--service_auth-cacert', ca_cert,
+            ]
 
         creds = None
         if centralized:
@@ -140,9 +196,20 @@ class BaseFreezerCliTest(base.BaseFreezerTest):
                 '--os-project-name', creds.project_name,
                 '--os-project-domain-name', creds.project_domain_name,
                 '--os-user-domain-name', creds.user_domain_name,
+                # Explicitly override [service_auth] options in scheduler.conf
+                '--service_auth-username', creds.username,
+                '--service_auth-password', creds.password,
+                '--service_auth-project-name', creds.project_name,
+                '--service_auth-project-domain-name',
+                creds.project_domain_name,
+                '--service_auth-user-domain-name', creds.user_domain_name,
             ]
 
-        cmd += ['--os-auth-url', self.get_auth_url()]
+        auth_url = self.get_auth_url()
+        cmd += [
+            '--os-auth-url', auth_url,
+            '--service_auth-auth-url', auth_url,
+        ]
         cmd += ['start']
 
         # Write stdout/stderr to LOGDIR or fallback to jobs_dir
@@ -244,7 +311,7 @@ class BaseFreezerCliTest(base.BaseFreezerTest):
 
 class CLIClientWithFreezer(cli_base.CLIClient):
     def freezer_scheduler(self, action, flags='', params='', fail_ok=False,
-                          endpoint_type='publicURL', merge_stderr=False):
+                          endpoint_type=None, merge_stderr=False):
         """Executes freezer-scheduler command for the given action.
 
         :param action: the cli command to run using freezer-scheduler
@@ -260,6 +327,8 @@ class CLIClientWithFreezer(cli_base.CLIClient):
         :param merge_stderr: if True the stderr buffer is merged into stdout
         :type merge_stderr: boolean
         """
+        if endpoint_type is None:
+            endpoint_type = getattr(CONF.backup, 'endpoint_type', 'publicURL')
 
         flags += ' --os-endpoint-type %s' % endpoint_type
         ca_cert = \
@@ -277,7 +346,10 @@ class CLIClientWithFreezer(cli_base.CLIClient):
             'freezer-scheduler', action, flags, params, fail_ok, merge_stderr)
 
     def freezer_client(self, action, flags='', params='', fail_ok=False,
-                       endpoint_type='publicURL', merge_stderr=True):
+                       endpoint_type=None, merge_stderr=True):
+        if endpoint_type is None:
+            endpoint_type = getattr(CONF.backup, 'endpoint_type', 'publicURL')
+
         flags += ' --os-endpoint-type %s' % endpoint_type
         ca_cert = \
             os.environ.get('OS_CACERT') or CONF.identity.ca_certificates_file

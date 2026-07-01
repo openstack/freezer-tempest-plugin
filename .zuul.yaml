@@ -77,7 +77,7 @@
     parent: freezer-tempest-basic
     voting: true
     vars:
-      tempest_test_regex: '^(freezer_tempest_plugin.tests.scheduler.)'
+      tempest_test_regex: '^(freezer_tempest_plugin.tests.(scheduler.|freezer.scenario.test_backups.))'
 
 - job:
     name: freezer-tempest-agent
