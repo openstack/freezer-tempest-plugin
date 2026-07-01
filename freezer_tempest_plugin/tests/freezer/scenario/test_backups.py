@@ -18,6 +18,7 @@ import shutil
 import subprocess
 import tempfile
 import time
+from types import SimpleNamespace
 
 from tempest import config
 from tempest.lib.cli import base as cli_base
@@ -121,44 +122,28 @@ class BaseFreezerCliTest(base.BaseFreezerTest):
                    or CONF.identity.ca_certificates_file)
         if ca_cert:
             cmd += ['--os-cacert', ca_cert]
-        project_domain = (
-            getattr(CONF.identity,
-                    'project_domain_name', None)
-            or 'Default')
-        user_domain = (
-            getattr(CONF.identity,
-                    'user_domain_name', None)
-            or 'Default')
-        cmd += ['--os-project-domain-name', project_domain]
-        cmd += ['--os-user-domain-name', user_domain]
-        cmd += ['start']
 
-        env = os.environ.copy()
+        creds = None
         if centralized:
             service_creds = self._get_service_credentials()
             if service_creds:
-                env['OS_USERNAME'] = service_creds['username']
-                env['OS_PASSWORD'] = service_creds['password']
-                env['OS_PROJECT_NAME'] = service_creds['project_name']
-                env['OS_TENANT_NAME'] = service_creds['project_name']
-                env['OS_PROJECT_DOMAIN_NAME'] = (
-                    service_creds['project_domain_name'])
-                env['OS_USER_DOMAIN_NAME'] = (
-                    service_creds['user_domain_name'])
+                creds = SimpleNamespace(**service_creds)
             else:
-                env['OS_USERNAME'] = (
-                    self.os_admin.credentials.username)
-                env['OS_PASSWORD'] = (
-                    self.os_admin.credentials.password)
-                env['OS_PROJECT_NAME'] = (
-                    self.os_admin.credentials.project_name)
-                env['OS_TENANT_NAME'] = (
-                    self.os_admin.credentials.project_name)
-                env['OS_PROJECT_DOMAIN_NAME'] = (
-                    self.os_admin.credentials.project_domain_name)
-                env['OS_USER_DOMAIN_NAME'] = (
-                    self.os_admin.credentials.user_domain_name)
-        env['OS_AUTH_URL'] = self.get_auth_url()
+                creds = self.os_admin.credentials
+        else:
+            creds = self.os_primary.credentials
+
+        if creds:
+            cmd += [
+                '--os-username', creds.username,
+                '--os-password', creds.password,
+                '--os-project-name', creds.project_name,
+                '--os-project-domain-name', creds.project_domain_name,
+                '--os-user-domain-name', creds.user_domain_name,
+            ]
+
+        cmd += ['--os-auth-url', self.get_auth_url()]
+        cmd += ['start']
 
         # Write stdout/stderr to LOGDIR or fallback to jobs_dir
         log_dir = os.environ.get('LOGDIR') or '/opt/stack/logs'
@@ -168,9 +153,7 @@ class BaseFreezerCliTest(base.BaseFreezerTest):
             log_dir, 'freezer-scheduler-{}.log'.format(client_id))
 
         with open(log_path, 'w') as log_file:
-            proc = subprocess.Popen(
-                cmd, env=env,
-                stdout=log_file, stderr=log_file)
+            proc = subprocess.Popen(cmd, stdout=log_file, stderr=log_file)
         self.schedulers.append(proc)
         return proc
 
