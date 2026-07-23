@@ -231,7 +231,8 @@ class TestFreezerApiBackups(base.BaseFreezerApiTest):
         return {
             'user_id': self.os_primary.credentials.user_id,
             'project_id': self.freezer_api_client.tenant_id,
-            'backup_metadata': metadata
+            'backup_metadata': metadata,
+            'status': 'available',
         }
 
     def _build_metadata(self, backup_name):
