@@ -14,6 +14,7 @@
 
 import tempest
 from tempest.lib import decorators
+from tempest.lib import exceptions
 
 from oslo_serialization import jsonutils as json
 
@@ -205,7 +206,7 @@ class TestFreezerApiBackups(base.BaseFreezerApiTest):
     @decorators.attr(type="gate")
     def test_api_backups_delete(self):
         metadata = self._build_metadata("test_freezer_backups")
-        backup_id = self._create_temporary_backup(metadata)
+        backup_id = self._create_temporary_backup(metadata, cleanup=False)
 
         self.freezer_api_client.delete_backups(backup_id)
 
@@ -218,10 +219,9 @@ class TestFreezerApiBackups(base.BaseFreezerApiTest):
         backup_id = self._create_temporary_backup(metadata)
 
         # Switching user
-        resp, response_body = self.os_alt.freezer_api_client.delete_backups(
-            backup_id)
-        self.assertEqual('204', resp['status'])
-        self.assertEmpty(response_body)
+        self.assertRaises(exceptions.NotFound,
+                          self.os_alt.freezer_api_client.delete_backups,
+                          backup_id)
 
         # Switching back to original user
         resp, response_body = self.freezer_api_client.get_backups()
@@ -278,7 +278,7 @@ class TestFreezerApiBackups(base.BaseFreezerApiTest):
             "version": "1.0"
         }
 
-    def _create_temporary_backup(self, metadata):
+    def _create_temporary_backup(self, metadata, cleanup=True):
         resp, response_body = self.freezer_api_client.post_backups(metadata)
 
         self.assertEqual('201', resp['status'])
@@ -286,7 +286,8 @@ class TestFreezerApiBackups(base.BaseFreezerApiTest):
         self.assertIn('backup_id', response_body)
         backup_id = response_body['backup_id']
 
-        self.addCleanup(self.freezer_api_client.delete_backups, backup_id)
+        if cleanup:
+            self.addCleanup(self.freezer_api_client.delete_backups, backup_id)
 
         return backup_id
 

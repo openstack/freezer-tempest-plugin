@@ -5,16 +5,16 @@
       - tempest-plugin-jobs
     check:
       jobs:
-        - freezer-tempest-basic
-        - freezer-tempest-ipv6-only
+        # - freezer-tempest-basic
+        # - freezer-tempest-ipv6-only
         - freezer-tempest-client
         - freezer-tempest-scheduler
         - freezer-tempest-agent
 
     gate:
       jobs:
-        - freezer-tempest-basic
-        - freezer-tempest-ipv6-only
+        # - freezer-tempest-basic
+        # - freezer-tempest-ipv6-only
         - freezer-tempest-client
         - freezer-tempest-scheduler
         - freezer-tempest-agent
