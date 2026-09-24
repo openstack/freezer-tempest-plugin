@@ -12,7 +12,6 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-import uuid
 
 from oslo_serialization import jsonutils as json
 from tempest.lib import decorators
@@ -67,7 +66,6 @@ def get_fake_client(client_id=None, hostname=None):
         "client_id": client_id,
         'hostname': hostname,
         'description': 'a test client',
-        'uuid': uuid.uuid4().hex,
     }
 
 

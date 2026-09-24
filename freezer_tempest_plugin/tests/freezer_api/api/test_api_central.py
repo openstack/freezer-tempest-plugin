@@ -36,7 +36,6 @@ class TestFreezerApiCentral(base.BaseFreezerApiTest):
             'client_id': client_id,
             'hostname': 'test-host-name',
             'description': 'a test central client',
-            'uuid': uuid.uuid4().hex,
             'is_central': True
         }
 
@@ -60,7 +59,6 @@ class TestFreezerApiCentral(base.BaseFreezerApiTest):
             'client_id': client_id,
             'hostname': 'test-host-name',
             'description': 'a test central client',
-            'uuid': uuid.uuid4().hex,
             'is_central': True
         }
 

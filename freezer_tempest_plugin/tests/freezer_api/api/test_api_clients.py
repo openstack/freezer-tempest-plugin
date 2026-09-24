@@ -13,7 +13,6 @@
 # under the License.
 
 import time
-import uuid
 
 from tempest.lib import decorators
 # from tempest.lib import exceptions
@@ -78,8 +77,7 @@ class TestFreezerApiClients(base.BaseFreezerApiTest):
     def test_api_clients_post(self):
         client = {'client_id': 'test-client-id',
                   'hostname': 'test-host-name',
-                  'description': 'a test client',
-                  'uuid': uuid.uuid4().hex}
+                  'description': 'a test client'}
 
         # Create the client with POST
         resp, response_body = self.freezer_api_client.post_clients(client)
